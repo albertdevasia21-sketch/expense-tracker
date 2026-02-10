@@ -1213,6 +1213,8 @@ async def delete_rule(rule_id: str, user: dict = Depends(get_current_user)):
 @api_router.get("/dashboard/summary")
 async def get_dashboard_summary(month: str, user: dict = Depends(get_current_user)):
     """Get dashboard summary for a specific month"""
+    from dateutil.relativedelta import relativedelta
+    
     household_id = user["household_id"]
     
     # Get transactions for the month
@@ -1223,6 +1225,20 @@ async def get_dashboard_summary(month: str, user: dict = Depends(get_current_use
     
     income = sum(t["amount"] for t in transactions if t["amount"] > 0)
     expenses = sum(t["amount"] for t in transactions if t["amount"] < 0)
+    
+    # Get previous month data for comparison
+    year, mon = map(int, month.split("-"))
+    current_month_start = datetime(year, mon, 1)
+    prev_month_start = current_month_start - relativedelta(months=1)
+    prev_month = prev_month_start.strftime("%Y-%m")
+    
+    prev_transactions = await db.transactions.find(
+        {"household_id": household_id, "date": {"$regex": f"^{prev_month}"}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    prev_income = sum(t["amount"] for t in prev_transactions if t["amount"] > 0)
+    prev_expenses = sum(t["amount"] for t in prev_transactions if t["amount"] < 0)
     
     # Get budgets for the month
     budgets = await db.budgets.find(
@@ -1237,7 +1253,61 @@ async def get_dashboard_summary(month: str, user: dict = Depends(get_current_use
         "expenses": abs(expenses),
         "net": income + expenses,
         "budget": total_budget,
-        "to_budget": total_budget - abs(expenses)
+        "to_budget": total_budget - abs(expenses),
+        "prev_income": prev_income,
+        "prev_expenses": abs(prev_expenses),
+        "prev_net": prev_income + prev_expenses,
+        "income_change": income - prev_income,
+        "expenses_change": abs(expenses) - abs(prev_expenses)
+    }
+
+@api_router.get("/dashboard/category-spending")
+async def get_category_spending(month: str, user: dict = Depends(get_current_user)):
+    """Get spending breakdown by category for the month"""
+    household_id = user["household_id"]
+    
+    # Get expense transactions for the month
+    transactions = await db.transactions.find(
+        {"household_id": household_id, "date": {"$regex": f"^{month}"}, "amount": {"$lt": 0}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Get all categories with colors
+    categories = await db.categories.find(
+        {"household_id": household_id, "is_active": True},
+        {"_id": 0}
+    ).to_list(500)
+    
+    cat_map = {c["id"]: c for c in categories}
+    
+    # Group spending by category
+    by_category = {}
+    for tx in transactions:
+        cat_id = tx.get("category_id")
+        if cat_id and cat_id in cat_map:
+            cat = cat_map[cat_id]
+            cat_name = cat["category_name"]
+            if cat_name not in by_category:
+                by_category[cat_name] = {
+                    "name": cat_name,
+                    "amount": 0,
+                    "color": cat.get("color", "#64748B"),
+                    "group": cat.get("group_name", "Other"),
+                    "category_id": cat_id
+                }
+            by_category[cat_name]["amount"] += abs(tx["amount"])
+    
+    # Sort by amount descending
+    result = sorted(by_category.values(), key=lambda x: -x["amount"])
+    
+    # Calculate total and percentages
+    total = sum(item["amount"] for item in result)
+    for item in result:
+        item["percentage"] = round((item["amount"] / total * 100) if total > 0 else 0, 1)
+    
+    return {
+        "categories": result,
+        "total": total
     }
 
 @api_router.get("/dashboard/spending-chart")
