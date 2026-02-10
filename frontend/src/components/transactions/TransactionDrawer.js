@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { X, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -23,7 +23,7 @@ export const TransactionDrawer = ({
   onSave 
 }) => {
   const { api } = useAuth();
-  const { categories, members, accounts, merchants, getDefaultMember, categoryGroups } = useData();
+  const { categories, subcategories, members, accounts, merchants, getDefaultMember, getSubcategoriesForCategory } = useData();
   
   const defaultMember = getDefaultMember();
   
@@ -33,6 +33,7 @@ export const TransactionDrawer = ({
     amount: "",
     merchant_name: "",
     category_id: "",
+    subcategory_id: "",
     account_id: "",
     member_id: defaultMember?.id || "",
     notes: "",
@@ -42,6 +43,12 @@ export const TransactionDrawer = ({
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
+  // Get available subcategories for selected category
+  const availableSubcategories = useMemo(() => {
+    if (!formData.category_id) return [];
+    return getSubcategoriesForCategory(formData.category_id);
+  }, [formData.category_id, getSubcategoriesForCategory]);
+
   useEffect(() => {
     if (transaction) {
       setFormData({
@@ -50,6 +57,7 @@ export const TransactionDrawer = ({
         amount: Math.abs(transaction.amount).toString(),
         merchant_name: transaction.merchant_name || "",
         category_id: transaction.category_id || "",
+        subcategory_id: transaction.subcategory_id || "",
         account_id: transaction.account_id || "",
         member_id: transaction.member_id || "",
         notes: transaction.notes || "",
@@ -62,6 +70,7 @@ export const TransactionDrawer = ({
         amount: "",
         merchant_name: "",
         category_id: "",
+        subcategory_id: "",
         account_id: accounts[0]?.id || "",
         member_id: defaultMember?.id || "",
         notes: "",
@@ -69,6 +78,15 @@ export const TransactionDrawer = ({
       });
     }
   }, [transaction, defaultType, accounts, defaultMember]);
+
+  // Reset subcategory when category changes
+  const handleCategoryChange = (categoryId) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      category_id: categoryId,
+      subcategory_id: "" // Reset subcategory
+    }));
+  };
 
   const handleMerchantChange = (value) => {
     setFormData((prev) => ({ ...prev, merchant_name: value }));
@@ -106,6 +124,7 @@ export const TransactionDrawer = ({
       const payload = {
         ...formData,
         amount: finalAmount,
+        subcategory_id: formData.subcategory_id || null,
       };
 
       if (transaction) {
@@ -191,7 +210,7 @@ export const TransactionDrawer = ({
                     ? "bg-card shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
-                onClick={() => setFormData((prev) => ({ ...prev, type }))}
+                onClick={() => setFormData((prev) => ({ ...prev, type, category_id: "", subcategory_id: "" }))}
                 data-testid={`type-${type}-btn`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -275,7 +294,7 @@ export const TransactionDrawer = ({
             <Label>Category</Label>
             <Select
               value={formData.category_id}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
+              onValueChange={handleCategoryChange}
             >
               <SelectTrigger data-testid="transaction-category-select">
                 <SelectValue placeholder="Select category" />
@@ -294,7 +313,13 @@ export const TransactionDrawer = ({
                     </div>
                     {cats.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
-                        {cat.category_name}
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-2.5 h-2.5 rounded-full" 
+                            style={{ backgroundColor: cat.color || "#64748B" }}
+                          />
+                          {cat.category_name}
+                        </div>
                       </SelectItem>
                     ))}
                   </div>
@@ -302,6 +327,29 @@ export const TransactionDrawer = ({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Subcategory - only show if category is selected and has subcategories */}
+          {formData.category_id && availableSubcategories.length > 0 && (
+            <div className="space-y-2">
+              <Label>Subcategory <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Select
+                value={formData.subcategory_id}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, subcategory_id: value }))}
+              >
+                <SelectTrigger data-testid="transaction-subcategory-select">
+                  <SelectValue placeholder="General" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">General</SelectItem>
+                  {availableSubcategories.map((subcat) => (
+                    <SelectItem key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Account */}
           <div className="space-y-2">
