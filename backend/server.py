@@ -680,6 +680,48 @@ async def delete_category(category_id: str, user: dict = Depends(get_current_use
         raise HTTPException(status_code=404, detail="Category not found")
     return {"success": True}
 
+# ==================== SUBCATEGORIES ====================
+
+@api_router.get("/subcategories")
+async def get_subcategories(category_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    query = {"household_id": user["household_id"], "is_active": True}
+    if category_id:
+        query["category_id"] = category_id
+    
+    subcategories = await db.subcategories.find(query, {"_id": 0}).sort("sort_order", 1).to_list(500)
+    return subcategories
+
+@api_router.post("/subcategories")
+async def create_subcategory(subcat_data: SubcategoryCreate, user: dict = Depends(get_current_user)):
+    subcategory = Subcategory(
+        household_id=user["household_id"],
+        **subcat_data.model_dump()
+    )
+    await db.subcategories.insert_one(subcategory.model_dump())
+    return subcategory.model_dump()
+
+@api_router.put("/subcategories/{subcategory_id}")
+async def update_subcategory(subcategory_id: str, subcat_data: SubcategoryCreate, user: dict = Depends(get_current_user)):
+    result = await db.subcategories.update_one(
+        {"id": subcategory_id, "household_id": user["household_id"]},
+        {"$set": subcat_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    subcategory = await db.subcategories.find_one({"id": subcategory_id}, {"_id": 0})
+    return subcategory
+
+@api_router.delete("/subcategories/{subcategory_id}")
+async def delete_subcategory(subcategory_id: str, user: dict = Depends(get_current_user)):
+    result = await db.subcategories.update_one(
+        {"id": subcategory_id, "household_id": user["household_id"]},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    return {"success": True}
+
 # ==================== MERCHANTS ====================
 
 @api_router.get("/merchants")
