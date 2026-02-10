@@ -333,14 +333,17 @@ export const TransactionDrawer = ({
             <div className="space-y-2">
               <Label>Subcategory <span className="text-muted-foreground text-xs">(optional)</span></Label>
               <Select
-                value={formData.subcategory_id}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, subcategory_id: value }))}
+                value={formData.subcategory_id || "general"}
+                onValueChange={(value) => setFormData((prev) => ({ 
+                  ...prev, 
+                  subcategory_id: value === "general" ? "" : value 
+                }))}
               >
                 <SelectTrigger data-testid="transaction-subcategory-select">
                   <SelectValue placeholder="General" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">General</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
                   {availableSubcategories.map((subcat) => (
                     <SelectItem key={subcat.id} value={subcat.id}>
                       {subcat.name}
