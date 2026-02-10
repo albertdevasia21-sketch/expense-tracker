@@ -1509,18 +1509,6 @@ async def export_transactions(
         headers={"Content-Disposition": "attachment; filename=transactions.csv"}
     )
 
-# ==================== SETUP ====================
-
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Migration endpoint to add colors and subcategories to existing data
 @api_router.post("/migrate/add-colors-and-subcategories")
 async def migrate_add_colors_and_subcategories(user: dict = Depends(get_current_user)):
@@ -1559,6 +1547,18 @@ async def migrate_add_colors_and_subcategories(user: dict = Depends(get_current_
             await db.subcategories.insert_many(subcategories)
     
     return {"success": True, "message": "Migration complete"}
+
+# ==================== SETUP ====================
+
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logging.basicConfig(
     level=logging.INFO,
