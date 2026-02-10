@@ -1,0 +1,176 @@
+{
+  "timestamp": "2026-02-10T02:58:03.239875",
+  "total_tests": 28,
+  "passed_tests": 28,
+  "success_rate": 1.0,
+  "results": [
+    {
+      "test": "User Registration",
+      "success": true,
+      "details": "User created with ID: a2b9528a-cc3c-45d3-b837-a8d00fea4ac4",
+      "response_data": null
+    },
+    {
+      "test": "User Login (Demo)",
+      "success": true,
+      "details": "Demo user logged in: demo@example.com",
+      "response_data": null
+    },
+    {
+      "test": "Auth Me",
+      "success": true,
+      "details": "User info retrieved: test_user_20260210_025802@example.com",
+      "response_data": null
+    },
+    {
+      "test": "Get Household Members",
+      "success": true,
+      "details": "Found 2 members",
+      "response_data": null
+    },
+    {
+      "test": "Create Household Member",
+      "success": true,
+      "details": "Member created: b44cb6b0-cbd0-4220-9aaa-9c3d5e85a859",
+      "response_data": null
+    },
+    {
+      "test": "Update Household Member",
+      "success": true,
+      "details": "Member updated: b44cb6b0-cbd0-4220-9aaa-9c3d5e85a859",
+      "response_data": null
+    },
+    {
+      "test": "Get Categories",
+      "success": true,
+      "details": "Found 39 categories",
+      "response_data": null
+    },
+    {
+      "test": "Create Category",
+      "success": true,
+      "details": "Category created: 38afd06d-424e-4843-8876-c0312d631186",
+      "response_data": null
+    },
+    {
+      "test": "Get Accounts",
+      "success": true,
+      "details": "Found 4 accounts",
+      "response_data": null
+    },
+    {
+      "test": "Create Account",
+      "success": true,
+      "details": "Account created: d1f3216f-1a12-4530-b089-4fb3c53117bf",
+      "response_data": null
+    },
+    {
+      "test": "Get Transactions",
+      "success": true,
+      "details": "Found 10 transactions",
+      "response_data": null
+    },
+    {
+      "test": "Create Transaction",
+      "success": true,
+      "details": "Transaction created: 3409fa3e-5ac1-4eef-a41e-bf0c7c9e7d07",
+      "response_data": null
+    },
+    {
+      "test": "Update Transaction",
+      "success": true,
+      "details": "Transaction updated: 3409fa3e-5ac1-4eef-a41e-bf0c7c9e7d07",
+      "response_data": null
+    },
+    {
+      "test": "Get Budgets",
+      "success": true,
+      "details": "Found 7 budgets",
+      "response_data": null
+    },
+    {
+      "test": "Create Budget",
+      "success": true,
+      "details": "Budget created: 78c8aa46-8e7f-46b1-b6fa-eef2d3647918",
+      "response_data": null
+    },
+    {
+      "test": "Get Recurring Rules",
+      "success": true,
+      "details": "Found 4 rules",
+      "response_data": null
+    },
+    {
+      "test": "Create Recurring Rule",
+      "success": true,
+      "details": "Rule created: 310b6aae-cfe8-4bf7-a608-55c8f52be273",
+      "response_data": null
+    },
+    {
+      "test": "Post Recurring Transaction",
+      "success": true,
+      "details": "Transaction posted from rule: 310b6aae-cfe8-4bf7-a608-55c8f52be273",
+      "response_data": null
+    },
+    {
+      "test": "Get Goals",
+      "success": true,
+      "details": "Found 2 goals",
+      "response_data": null
+    },
+    {
+      "test": "Create Goal",
+      "success": true,
+      "details": "Goal created: 433f8efb-d427-4dc7-acad-90cf55dc2e28",
+      "response_data": null
+    },
+    {
+      "test": "Goal Contribution",
+      "success": true,
+      "details": "Contributed to goal: 433f8efb-d427-4dc7-acad-90cf55dc2e28",
+      "response_data": null
+    },
+    {
+      "test": "Get Merchants",
+      "success": true,
+      "details": "Found 1 merchants",
+      "response_data": null
+    },
+    {
+      "test": "Get Tags",
+      "success": true,
+      "details": "Found 0 tags",
+      "response_data": null
+    },
+    {
+      "test": "Create Tag",
+      "success": true,
+      "details": "Tag created: 0165c91d-d536-4751-8e73-0fad037c3986",
+      "response_data": null
+    },
+    {
+      "test": "Dashboard Summary",
+      "success": true,
+      "details": "Summary: Income=9200.0, Expenses=2495.0",
+      "response_data": null
+    },
+    {
+      "test": "Spending Chart",
+      "success": true,
+      "details": "Chart data retrieved with 31 data points",
+      "response_data": null
+    },
+    {
+      "test": "Reports Summary",
+      "success": true,
+      "details": "Reports: Total spent=2595.0",
+      "response_data": null
+    },
+    {
+      "test": "CSV Export",
+      "success": true,
+      "details": "CSV exported successfully, size: 862 bytes",
+      "response_data": null
+    }
+  ]
+}
