@@ -1362,6 +1362,7 @@ async def get_reports_summary(
     end_date: Optional[str] = None,
     member_id: Optional[str] = None,
     category_id: Optional[str] = None,
+    subcategory_id: Optional[str] = None,
     account_id: Optional[str] = None,
     user: dict = Depends(get_current_user)
 ):
@@ -1381,6 +1382,8 @@ async def get_reports_summary(
         query["member_id"] = member_id
     if category_id:
         query["category_id"] = category_id
+    if subcategory_id:
+        query["subcategory_id"] = subcategory_id
     if account_id:
         query["account_id"] = account_id
     
@@ -1392,7 +1395,7 @@ async def get_reports_summary(
     total_spent = sum(abs(t["amount"]) for t in expenses)
     total_income = sum(t["amount"] for t in income)
     
-    # By category
+    # By category with colors
     by_category = {}
     categories = await db.categories.find({"household_id": household_id}, {"_id": 0}).to_list(500)
     cat_map = {c["id"]: c for c in categories}
@@ -1402,7 +1405,21 @@ async def get_reports_summary(
         if cat_id and cat_id in cat_map:
             cat = cat_map[cat_id]
             key = cat["category_name"]
-            by_category[key] = by_category.get(key, 0) + abs(tx["amount"])
+            if key not in by_category:
+                by_category[key] = {"value": 0, "color": cat.get("color", "#64748B")}
+            by_category[key]["value"] += abs(tx["amount"])
+    
+    # By subcategory
+    by_subcategory = {}
+    subcategories = await db.subcategories.find({"household_id": household_id}, {"_id": 0}).to_list(500)
+    subcat_map = {s["id"]: s for s in subcategories}
+    
+    for tx in expenses:
+        subcat_id = tx.get("subcategory_id")
+        if subcat_id and subcat_id in subcat_map:
+            subcat = subcat_map[subcat_id]
+            key = subcat["name"]
+            by_subcategory[key] = by_subcategory.get(key, 0) + abs(tx["amount"])
     
     # By member
     members = await db.household_members.find({"household_id": household_id}, {"_id": 0}).to_list(100)
