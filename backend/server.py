@@ -77,12 +77,28 @@ class Category(BaseModel):
     is_fixed: bool = False
     sort_order: int = 0
     is_active: bool = True
+    color: str = "#64748B"  # Category color for charts
 
 class CategoryCreate(BaseModel):
     group_name: str
     category_name: str
     type: str = "expense"
     is_fixed: bool = False
+    sort_order: int = 0
+    color: str = "#64748B"
+
+# Subcategory model
+class Subcategory(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    household_id: str
+    category_id: str
+    name: str
+    sort_order: int = 0
+    is_active: bool = True
+
+class SubcategoryCreate(BaseModel):
+    category_id: str
+    name: str
     sort_order: int = 0
 
 class Merchant(BaseModel):
