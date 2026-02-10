@@ -358,7 +358,7 @@ DEFAULT_SUBCATEGORIES = {
 }
 
 async def create_default_data(household_id: str, me_member_id: str, wife_member_id: str):
-    """Create default categories, accounts, and seed data for a new household"""
+    """Create default categories, subcategories, accounts, and seed data for a new household"""
     
     # Create categories
     categories = []
@@ -370,9 +370,27 @@ async def create_default_data(household_id: str, me_member_id: str, wife_member_
         )
         categories.append(cat.model_dump())
         category_map[f"{cat_data['group_name']}_{cat_data['category_name']}"] = cat.id
+        category_map[cat_data['category_name']] = cat.id  # Also map by name for subcategories
     
     if categories:
         await db.categories.insert_many(categories)
+    
+    # Create default subcategories
+    subcategories = []
+    for cat_name, subcat_names in DEFAULT_SUBCATEGORIES.items():
+        cat_id = category_map.get(cat_name)
+        if cat_id:
+            for idx, subcat_name in enumerate(subcat_names):
+                subcat = Subcategory(
+                    household_id=household_id,
+                    category_id=cat_id,
+                    name=subcat_name,
+                    sort_order=idx
+                )
+                subcategories.append(subcat.model_dump())
+    
+    if subcategories:
+        await db.subcategories.insert_many(subcategories)
     
     # Create default accounts
     accounts = [
