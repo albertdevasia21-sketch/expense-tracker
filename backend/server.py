@@ -1521,6 +1521,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Migration endpoint to add colors and subcategories to existing data
+@api_router.post("/migrate/add-colors-and-subcategories")
+async def migrate_add_colors_and_subcategories(user: dict = Depends(get_current_user)):
+    """Add colors to existing categories and create default subcategories"""
+    household_id = user["household_id"]
+    
+    # Update category colors
+    for cat_data in DEFAULT_CATEGORIES:
+        await db.categories.update_many(
+            {"household_id": household_id, "category_name": cat_data["category_name"]},
+            {"$set": {"color": cat_data.get("color", "#64748B")}}
+        )
+    
+    # Check if subcategories already exist
+    existing_subcats = await db.subcategories.count_documents({"household_id": household_id})
+    if existing_subcats == 0:
+        # Get category map
+        categories = await db.categories.find({"household_id": household_id}, {"_id": 0}).to_list(500)
+        category_map = {c["category_name"]: c["id"] for c in categories}
+        
+        # Create default subcategories
+        subcategories = []
+        for cat_name, subcat_names in DEFAULT_SUBCATEGORIES.items():
+            cat_id = category_map.get(cat_name)
+            if cat_id:
+                for idx, subcat_name in enumerate(subcat_names):
+                    subcat = Subcategory(
+                        household_id=household_id,
+                        category_id=cat_id,
+                        name=subcat_name,
+                        sort_order=idx
+                    )
+                    subcategories.append(subcat.model_dump())
+        
+        if subcategories:
+            await db.subcategories.insert_many(subcategories)
+    
+    return {"success": True, "message": "Migration complete"}
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
