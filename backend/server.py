@@ -819,6 +819,7 @@ async def get_transactions(
     month: Optional[str] = None,
     member_id: Optional[str] = None,
     category_id: Optional[str] = None,
+    subcategory_id: Optional[str] = None,
     account_id: Optional[str] = None,
     search: Optional[str] = None,
     start_date: Optional[str] = None,
