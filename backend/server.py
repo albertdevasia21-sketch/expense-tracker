@@ -133,6 +133,7 @@ class Transaction(BaseModel):
     merchant_id: Optional[str] = None
     merchant_name: Optional[str] = None
     category_id: Optional[str] = None
+    subcategory_id: Optional[str] = None
     account_id: Optional[str] = None
     member_id: Optional[str] = None
     notes: Optional[str] = None
@@ -147,6 +148,7 @@ class TransactionCreate(BaseModel):
     merchant_id: Optional[str] = None
     merchant_name: Optional[str] = None
     category_id: Optional[str] = None
+    subcategory_id: Optional[str] = None
     account_id: Optional[str] = None
     member_id: Optional[str] = None
     notes: Optional[str] = None
@@ -160,6 +162,7 @@ class TransactionUpdate(BaseModel):
     merchant_id: Optional[str] = None
     merchant_name: Optional[str] = None
     category_id: Optional[str] = None
+    subcategory_id: Optional[str] = None
     account_id: Optional[str] = None
     member_id: Optional[str] = None
     notes: Optional[str] = None
