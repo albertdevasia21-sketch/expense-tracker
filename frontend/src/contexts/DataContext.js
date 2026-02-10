@@ -15,6 +15,7 @@ export const DataProvider = ({ children }) => {
   const { api, isAuthenticated } = useAuth();
   
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [members, setMembers] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [merchants, setMerchants] = useState([]);
@@ -27,8 +28,9 @@ export const DataProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      const [catRes, memRes, accRes, merRes, tagRes, goalRes] = await Promise.all([
+      const [catRes, subcatRes, memRes, accRes, merRes, tagRes, goalRes] = await Promise.all([
         api.get("/categories"),
+        api.get("/subcategories"),
         api.get("/household-members"),
         api.get("/accounts"),
         api.get("/merchants"),
@@ -37,6 +39,7 @@ export const DataProvider = ({ children }) => {
       ]);
       
       setCategories(catRes.data);
+      setSubcategories(subcatRes.data);
       setMembers(memRes.data);
       setAccounts(accRes.data);
       setMerchants(merRes.data);
@@ -54,10 +57,14 @@ export const DataProvider = ({ children }) => {
   }, [fetchAll]);
 
   const getCategoryById = (id) => categories.find((c) => c.id === id);
+  const getSubcategoryById = (id) => subcategories.find((s) => s.id === id);
   const getMemberById = (id) => members.find((m) => m.id === id);
   const getAccountById = (id) => accounts.find((a) => a.id === id);
   const getMerchantById = (id) => merchants.find((m) => m.id === id);
   const getDefaultMember = () => members.find((m) => m.is_default) || members[0];
+  
+  const getSubcategoriesForCategory = (categoryId) => 
+    subcategories.filter((s) => s.category_id === categoryId);
 
   const categoryGroups = categories.reduce((acc, cat) => {
     if (!acc[cat.group_name]) {
@@ -76,6 +83,7 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider
       value={{
         categories,
+        subcategories,
         members,
         accounts,
         merchants,
@@ -84,16 +92,19 @@ export const DataProvider = ({ children }) => {
         loading,
         fetchAll,
         getCategoryById,
+        getSubcategoryById,
         getMemberById,
         getAccountById,
         getMerchantById,
         getDefaultMember,
+        getSubcategoriesForCategory,
         categoryGroups,
         expenseCategories,
         incomeCategories,
         fixedCategories,
         flexibleCategories,
         setCategories,
+        setSubcategories,
         setMembers,
         setAccounts,
         setMerchants,
