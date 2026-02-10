@@ -1437,13 +1437,20 @@ async def get_reports_summary(
     total_budget = sum(b["amount"] for b in budgets)
     budget_usage = (total_spent / total_budget * 100) if total_budget > 0 else 0
     
+    # Calculate percentages for categories
+    category_list = []
+    for k, v in sorted(by_category.items(), key=lambda x: -x[1]["value"]):
+        percentage = round((v["value"] / total_spent * 100) if total_spent > 0 else 0, 1)
+        category_list.append({"name": k, "value": v["value"], "color": v["color"], "percentage": percentage})
+    
     return {
         "total_spent": total_spent,
         "total_income": total_income,
         "transaction_count": len(expenses),
         "avg_transaction": total_spent / len(expenses) if expenses else 0,
         "budget_usage": round(budget_usage, 1),
-        "by_category": [{"name": k, "value": v} for k, v in sorted(by_category.items(), key=lambda x: -x[1])],
+        "by_category": category_list,
+        "by_subcategory": [{"name": k, "value": v} for k, v in sorted(by_subcategory.items(), key=lambda x: -x[1])],
         "by_member": [{"name": k, "value": v, "color": member_map.get(next((m["id"] for m in members if m["name"] == k), None), {}).get("color", "#64748B")} for k, v in by_member.items()]
     }
 
