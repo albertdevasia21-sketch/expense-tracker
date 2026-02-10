@@ -1,0 +1,154 @@
+{
+  "identity": {
+    "name": "Expense Tracker",
+    "persona": "E1 - The Anti-AI Designer",
+    "tone": "Clean, Modern, Trustworthy, Organized",
+    "aesthetic": "Monarch-style Fintech",
+    "theme_preference": "light"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Outfit, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl font-bold tracking-tight",
+      "h2": "text-3xl font-semibold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-tight",
+      "h4": "text-xl font-medium",
+      "body": "text-base leading-relaxed text-slate-600",
+      "small": "text-sm font-medium text-slate-500"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": "#0F172A",
+      "primary_foreground": "#F8FAFC",
+      "secondary": "#F1F5F9",
+      "secondary_foreground": "#0F172A",
+      "accent": "#3B82F6",
+      "accent_foreground": "#FFFFFF",
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "border": "#E2E8F0",
+      "muted": "#64748B",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "danger": "#EF4444"
+    },
+    "gradients": {
+      "primary_gradient": "bg-gradient-to-br from-slate-900 to-slate-800",
+      "accent_gradient": "bg-gradient-to-br from-blue-500 to-blue-600"
+    },
+    "dark_mode_overrides": {
+      "background": "#020617",
+      "surface": "#0F172A",
+      "border": "#1E293B",
+      "text": "#F8FAFC"
+    }
+  },
+  "layout": {
+    "structure": "Dashboard-first with fixed left sidebar navigation",
+    "grid_system": "Bento Grid (12 columns)",
+    "spacing": {
+      "container_padding": "p-6 md:p-8",
+      "card_padding": "p-6",
+      "section_gap": "gap-6 md:gap-8"
+    },
+    "sidebar": {
+      "width": "w-64",
+      "style": "fixed left-0 top-0 h-full border-r border-slate-200 bg-white z-30 hidden md:flex flex-col"
+    },
+    "main_content": {
+      "style": "flex-1 md:ml-64 min-h-screen bg-slate-50/50"
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200",
+      "header": "flex flex-row items-center justify-between space-y-0 pb-2",
+      "content": "pt-4"
+    },
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 shadow-sm rounded-lg px-4 py-2 font-medium transition-all active:scale-95",
+      "secondary": "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-sm rounded-lg px-4 py-2 font-medium transition-all active:scale-95",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-3 py-2 transition-colors"
+    },
+    "inputs": {
+      "style": "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "charts": {
+      "library": "Recharts",
+      "style": "Clean, minimal grid lines, custom tooltips with rounded corners and shadow"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "card": "shadow-[0_1px_3px_0_rgb(0,0,0,0.1),0_1px_2px_-1px_rgb(0,0,0,0.1)]",
+      "dropdown": "shadow-[0_10px_15px_-3px_rgb(0,0,0,0.1),0_4px_6px_-4px_rgb(0,0,0,0.1)]"
+    },
+    "borders": "border border-slate-200",
+    "radius": "rounded-xl",
+    "glassmorphism": "backdrop-blur-md bg-white/80 border-b border-slate-200/50"
+  },
+  "image_urls": {
+    "profile_me": {
+      "url": "https://images.unsplash.com/photo-1755519024827-fd05075a7200?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwzfHxwb3J0cmFpdCUyMHNtaWxpbmclMjBtYW4lMjBwcm9mZXNzaW9uYWwlMjBwcm9maWxlJTIwcGljdHVyZXxlbnwwfHx8fDE3NzA2OTEzODZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Professional man with glasses, smiling",
+      "category": "User Avatar"
+    },
+    "profile_wife": {
+      "url": "https://images.unsplash.com/photo-1590905775253-a4f0f3c426ff?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxwb3J0cmFpdCUyMHNtaWxpbmclMjBtYW4lMjB3b21hbiUyMHByb2Zlc3Npb25hbCUyMHByb2ZpbGUlMjBwaWN0dXJlfGVufDB8fHx8MTc3MDY5MTM2MXww&ixlib=rb-4.1.0&q=85",
+      "description": "Professional woman in floral shirt, smiling",
+      "category": "User Avatar"
+    },
+    "goal_house": {
+      "url": "https://images.unsplash.com/photo-1766603636562-531bb3e1dda8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBsdXh1cnklMjBob21lJTIwZXh0ZXJpb3IlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzcwNjkxMzkxfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Modern house exterior with wooden facade",
+      "category": "Goal Image"
+    },
+    "goal_vacation": {
+      "url": "https://images.unsplash.com/photo-1727184799311-bd00f3faaad6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGJlYWNoJTIwdmFjYXRpb24lMjBwYXJhZGlzZXxlbnwwfHx8fDE3NzA2OTEzOTZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Idyllic tropical beach resort",
+      "category": "Goal Image"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Implement the 'Monarch-style' aesthetic: generous whitespace, soft shadows, and rounded corners (12-16px).",
+    "Use the 'Bento Grid' layout for the Dashboard: mix large summary cards with smaller metric cards.",
+    "Ensure the Sidebar is fixed on the left and the main content area scrolls independently.",
+    "Use 'Outfit' font for all headings to give it a modern, friendly character. Use 'Inter' for body text.",
+    "Implement the 'Blue Accent' (#3B82F6) sparingly for active states, primary buttons, and key data points.",
+    "Use Shadcn UI components for all interactive elements (Dialogs, Sheets, Dropdowns, Forms).",
+    "Customize Shadcn components to match the 'rounded-xl' and 'shadow-sm' aesthetic.",
+    "Use Recharts for all data visualization. Ensure charts are clean with minimal grid lines.",
+    "Implement the 'Me' and 'Wife' household member logic with distinct color coding (e.g., Blue for Me, Pink/Purple for Wife) in avatars and transaction tags.",
+    "Ensure all buttons and tabs are functional as per the requirements.",
+    "Add 'data-testid' to all interactive elements for testing."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add '.App { text-align: center; }' in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Create new components that match the style and conventions of existing components when needed.",
+    "Examine existing components to understand the project's component patterns before creating new ones.",
+    "Components MUST use named exports (export const ComponentName = ...).",
+    "Pages MUST use default exports (export default function PageName() {...}).",
+    "Use 'sonner' for toasts. Sonner component are located in '/app/src/components/ui/sonner.tsx'."
+  ]
+}
