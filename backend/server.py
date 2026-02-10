@@ -841,6 +841,8 @@ async def get_transactions(
         query["member_id"] = member_id
     if category_id:
         query["category_id"] = category_id
+    if subcategory_id:
+        query["subcategory_id"] = subcategory_id
     if account_id:
         query["account_id"] = account_id
     if search:
