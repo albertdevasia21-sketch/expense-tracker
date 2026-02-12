@@ -130,26 +130,28 @@ export default function Dashboard() {
       <div className="page-content space-y-6">
         {/* Summary Cards */}
         <div className="summary-grid">
-          <Card className="card-hover" data-testid="income-card">
+          <Card className="card-hover bg-gradient-to-br from-emerald-50 to-teal-100/50 border-emerald-200/60 dark:from-emerald-900/30 dark:to-teal-900/20 dark:border-emerald-700/30" data-testid="income-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Income</CardTitle>
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Income</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">
                 {formatCurrency(summary.income)}
               </div>
               <div className="flex items-center justify-between mt-1">
                 <button
                   onClick={openAddIncome}
-                  className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+                  className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                   data-testid="add-income-link"
                 >
                   <Plus className="w-3 h-3" /> Add Income
                 </button>
                 {summary.income_change !== 0 && (
                   <span className={`text-xs flex items-center gap-0.5 ${
-                    summary.income_change > 0 ? 'text-emerald-600' : 'text-red-500'
+                    summary.income_change > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'
                   }`}>
                     {summary.income_change > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {formatChange(summary.income, summary.prev_income)}% vs last month
@@ -159,19 +161,21 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-hover" data-testid="expenses-card">
+          <Card className="card-hover bg-gradient-to-br from-rose-50 to-pink-100/50 border-rose-200/60 dark:from-rose-900/30 dark:to-pink-900/20 dark:border-rose-700/30" data-testid="expenses-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Expenses</CardTitle>
-              <TrendingDown className="w-4 h-4 text-red-500" />
+              <CardTitle className="text-sm font-medium text-rose-700 dark:text-rose-300">Expenses</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-2xl font-bold text-rose-700 dark:text-rose-300 tabular-nums">
                 {formatCurrency(summary.expenses)}
               </div>
               <div className="flex items-center justify-end mt-1">
                 {summary.expenses_change !== 0 && (
                   <span className={`text-xs flex items-center gap-0.5 ${
-                    summary.expenses_change < 0 ? 'text-emerald-600' : 'text-red-500'
+                    summary.expenses_change < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'
                   }`}>
                     {summary.expenses_change < 0 ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                     {Math.abs(formatChange(summary.expenses, summary.prev_expenses) || 0)}% vs last month
@@ -181,35 +185,39 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-hover" data-testid="budget-card">
+          <Card className="card-hover bg-gradient-to-br from-violet-50 to-purple-100/50 border-violet-200/60 dark:from-violet-900/30 dark:to-purple-900/20 dark:border-violet-700/30" data-testid="budget-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">To Budget</CardTitle>
-              <Target className="w-4 h-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300">To Budget</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                <Target className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold tabular-nums ${
-                summary.to_budget >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                summary.to_budget >= 0 ? 'text-violet-700 dark:text-violet-300' : 'text-rose-600 dark:text-rose-400'
               }`}>
                 {formatCurrency(summary.to_budget)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-violet-600/70 dark:text-violet-400/70 mt-1">
                 {summary.to_budget >= 0 ? "Remaining this month" : "Over budget"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="card-hover" data-testid="net-card">
+          <Card className="card-hover bg-gradient-to-br from-blue-50 to-indigo-100/50 border-blue-200/60 dark:from-blue-900/30 dark:to-indigo-900/20 dark:border-blue-700/30" data-testid="net-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Net Position</CardTitle>
-              <Wallet className="w-4 h-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Net Position</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Wallet className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold tabular-nums ${
-                summary.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                summary.net >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-600 dark:text-rose-400'
               }`}>
                 {formatCurrency(summary.net)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Income - Expenses</p>
+              <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">Income - Expenses</p>
             </CardContent>
           </Card>
         </div>
