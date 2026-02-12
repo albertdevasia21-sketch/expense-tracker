@@ -6,31 +6,31 @@
 
 @layer base {
     :root {
-        --background: 210 40% 98%;
+        --background: 220 20% 97%;
         --foreground: 222 47% 11%;
         --card: 0 0% 100%;
         --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
-        --primary: 222 47% 11%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96%;
+        --primary: 250 84% 54%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 220 14% 96%;
         --secondary-foreground: 222 47% 11%;
-        --muted: 210 40% 96%;
+        --muted: 220 14% 96%;
         --muted-foreground: 215 16% 47%;
-        --accent: 217 91% 60%;
+        --accent: 250 84% 54%;
         --accent-foreground: 0 0% 100%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
-        --success: 160 84% 39%;
+        --success: 152 76% 42%;
         --success-foreground: 0 0% 100%;
         --warning: 38 92% 50%;
         --warning-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 217 91% 60%;
-        --chart-1: 217 91% 60%;
-        --chart-2: 160 84% 39%;
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 250 84% 54%;
+        --chart-1: 250 84% 54%;
+        --chart-2: 152 76% 42%;
         --chart-3: 38 92% 50%;
         --chart-4: 330 81% 60%;
         --chart-5: 262 83% 58%;
@@ -38,32 +38,43 @@
         
         --member-me: 217 91% 60%;
         --member-wife: 330 81% 60%;
+        
+        /* Colorful gradients */
+        --gradient-income: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        --gradient-expense: linear-gradient(135deg, #F43F5E 0%, #FB7185 100%);
+        --gradient-primary: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        --gradient-accent: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%);
     }
 
     .dark {
-        --background: 222 47% 4%;
-        --foreground: 210 40% 98%;
-        --card: 222 47% 7%;
-        --card-foreground: 210 40% 98%;
-        --popover: 222 47% 7%;
-        --popover-foreground: 210 40% 98%;
-        --primary: 210 40% 98%;
-        --primary-foreground: 222 47% 11%;
-        --secondary: 217 33% 17%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 217 33% 17%;
-        --muted-foreground: 215 20% 65%;
-        --accent: 217 91% 60%;
+        --background: 240 10% 6%;
+        --foreground: 0 0% 95%;
+        --card: 240 10% 9%;
+        --card-foreground: 0 0% 95%;
+        --popover: 240 10% 9%;
+        --popover-foreground: 0 0% 95%;
+        --primary: 250 84% 64%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 240 6% 15%;
+        --secondary-foreground: 0 0% 95%;
+        --muted: 240 6% 15%;
+        --muted-foreground: 240 5% 64%;
+        --accent: 250 84% 64%;
         --accent-foreground: 0 0% 100%;
-        --destructive: 0 62% 30%;
+        --destructive: 0 62% 50%;
         --destructive-foreground: 0 0% 98%;
-        --success: 160 84% 39%;
+        --success: 152 76% 42%;
         --success-foreground: 0 0% 100%;
         --warning: 38 92% 50%;
         --warning-foreground: 0 0% 100%;
-        --border: 217 33% 17%;
-        --input: 217 33% 17%;
-        --ring: 217 91% 60%;
+        --border: 240 6% 20%;
+        --input: 240 6% 20%;
+        --ring: 250 84% 64%;
+        
+        --gradient-income: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        --gradient-expense: linear-gradient(135deg, #F43F5E 0%, #FB7185 100%);
+        --gradient-primary: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        --gradient-accent: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%);
     }
 }
 
@@ -185,11 +196,11 @@
 
 /* Member badge colors */
 .member-badge-me {
-    @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400;
 }
 
 .member-badge-wife {
-    @apply bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400;
+    @apply bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-400;
 }
 
 /* Amount colors */
@@ -199,6 +210,28 @@
 
 .amount-expense {
     @apply text-slate-900 dark:text-slate-100;
+}
+
+/* Colorful card styles */
+.card-income {
+    @apply bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 dark:from-emerald-900/20 dark:to-emerald-800/10 dark:border-emerald-700/30;
+}
+
+.card-expense {
+    @apply bg-gradient-to-br from-rose-50 to-rose-100/50 border-rose-200 dark:from-rose-900/20 dark:to-rose-800/10 dark:border-rose-700/30;
+}
+
+.card-primary {
+    @apply bg-gradient-to-br from-indigo-50 to-violet-100/50 border-indigo-200 dark:from-indigo-900/20 dark:to-violet-800/10 dark:border-indigo-700/30;
+}
+
+.card-accent {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-100/50 border-blue-200 dark:from-blue-900/20 dark:to-indigo-800/10 dark:border-blue-700/30;
+}
+
+/* Vibrant button styles */
+.btn-gradient {
+    @apply bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-lg shadow-indigo-500/25;
 }
 
 /* Progress bar animation */
