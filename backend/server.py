@@ -1091,6 +1091,77 @@ async def post_recurring_transaction(rule_id: str, user: dict = Depends(get_curr
     
     return transaction.model_dump()
 
+@api_router.post("/recurring/process-autopost")
+async def process_autopost_recurring(user: dict = Depends(get_current_user)):
+    """Process all due recurring transactions with autopost enabled.
+    This should be called on app load to create transactions that were due."""
+    from dateutil.relativedelta import relativedelta
+    
+    household_id = user["household_id"]
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Find all recurring rules that are due (next_date <= today) and have autopost enabled
+    due_rules = await db.recurring_rules.find(
+        {
+            "household_id": household_id,
+            "active": True,
+            "autopost": True,
+            "next_date": {"$lte": today}
+        },
+        {"_id": 0}
+    ).to_list(500)
+    
+    posted_transactions = []
+    
+    for rule in due_rules:
+        # Process each due occurrence (could be multiple if user hasn't logged in for a while)
+        rule_next_date = rule["next_date"]
+        
+        while rule_next_date <= today:
+            # Create transaction for this occurrence
+            amount = rule["amount"] if rule["type"] == "income" else -abs(rule["amount"])
+            transaction = Transaction(
+                household_id=household_id,
+                date=rule_next_date,
+                amount=amount,
+                type=rule["type"],
+                merchant_name=rule["name"],
+                category_id=rule.get("category_id"),
+                account_id=rule.get("account_id"),
+                member_id=rule.get("member_id"),
+                notes=f"{rule.get('notes', '')} (Auto-posted)".strip(),
+                is_recurring_instance=True
+            )
+            await db.transactions.insert_one(transaction.model_dump())
+            posted_transactions.append(transaction.model_dump())
+            
+            # Calculate next date
+            current_date = datetime.strptime(rule_next_date, "%Y-%m-%d")
+            if rule["frequency"] == "weekly":
+                next_dt = current_date + timedelta(weeks=1)
+            elif rule["frequency"] == "biweekly":
+                next_dt = current_date + timedelta(weeks=2)
+            elif rule["frequency"] == "monthly":
+                next_dt = current_date + relativedelta(months=1)
+            elif rule["frequency"] == "yearly":
+                next_dt = current_date + relativedelta(years=1)
+            else:
+                next_dt = current_date + relativedelta(months=1)
+            
+            rule_next_date = next_dt.strftime("%Y-%m-%d")
+        
+        # Update the rule with the new next_date
+        await db.recurring_rules.update_one(
+            {"id": rule["id"]},
+            {"$set": {"next_date": rule_next_date}}
+        )
+    
+    return {
+        "processed_rules": len(due_rules),
+        "posted_transactions": len(posted_transactions),
+        "transactions": posted_transactions
+    }
+
 # ==================== GOALS ====================
 
 @api_router.get("/goals")
