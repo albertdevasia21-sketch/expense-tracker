@@ -55,6 +55,7 @@ Build a clean, modern personal finance web app with:
 
 ## Implementation Date
 - **Created**: February 10, 2026
+- **Last Updated**: February 15, 2026
 
 ## What's Been Implemented
 - Full authentication flow (register/login/logout)
@@ -66,6 +67,11 @@ Build a clean, modern personal finance web app with:
 - CSV export for transactions
 - Dark mode toggle
 - Responsive sidebar with mobile menu
+- **Subcategories**: Categories can have subcategories for finer expense tracking
+- **Enhanced Dashboard**: Monthly Spending by Category section with colored bars
+- **Enhanced Reports**: Subcategory filter, category summary table with colors
+- **Date Bug Fix (Feb 15, 2026)**: Fixed timezone issue where dates were displayed one day earlier
+- **Auto-post Recurring (Feb 15, 2026)**: Recurring rules with autopost=true automatically create transactions on app load
 
 ## Prioritized Backlog
 
