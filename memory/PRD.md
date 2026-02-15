@@ -18,31 +18,41 @@ Build a clean, modern personal finance web app with:
 - **Auth**: JWT-based custom authentication
 - **Currency**: CAD (changeable in settings)
 - **Demo Data**: Minimal deletable seed data
+- **AI Provider**: OpenAI GPT-5.2 via Emergent LLM Key
 
 ## Technical Architecture
 
 ### Backend (FastAPI + MongoDB)
 - `/app/backend/server.py` - Main API with all endpoints
 - JWT authentication with 24-hour token expiration
-- MongoDB collections: users, household_members, categories, merchants, accounts, transactions, budgets, recurring_rules, goals, tags, rules
+- MongoDB collections: users, household_members, categories, merchants, accounts, transactions, budgets, recurring_rules, goals, tags, rules, insights
 
 ### Frontend (React + Tailwind + Shadcn UI)
 - `/app/frontend/src/App.js` - Main app with routing
 - `/app/frontend/src/contexts/` - AuthContext, ThemeContext, DataContext
-- `/app/frontend/src/pages/` - All page components
+- `/app/frontend/src/pages/` - All page components (including Insights.js)
 - `/app/frontend/src/components/` - Reusable components
 
 ### Key Features Implemented
-1. ✅ **Dashboard** - Summary cards, spending chart, recent transactions, goals preview
+1. ✅ **Dashboard** - Summary cards, spending chart, colorful category section, recent transactions, goals preview
 2. ✅ **Transactions** - Full list with filters (member/category/account), search, add/edit drawer
 3. ✅ **Budget** - Fixed/Flexible expense tracking with progress bars
 4. ✅ **Cash Flow** - Income vs expenses analysis with charts
 5. ✅ **Reports** - KPI cards, pie charts, line charts, CSV export
-6. ✅ **Recurring** - Income/expense rules with auto-post functionality
+6. ✅ **Recurring** - Income/expense rules with auto-post functionality, "Post Due This Month" button
 7. ✅ **Goals** - Progress tracking with contributions
 8. ✅ **Accounts** - Manual account management with balance tracking
 9. ✅ **Settings** - Profile, Household, Categories, Merchants, Tags, Data management
 10. ✅ **Dark Mode** - Toggle between light and dark themes
+11. ✅ **AI Insights** - GPT-5.2 powered financial analysis (spending patterns, budget recommendations, savings opportunities, monthly summary)
+
+### Recent Updates (Feb 15, 2026)
+- ✅ Fixed date selection bug (timezone issue)
+- ✅ Implemented auto-post for recurring transactions
+- ✅ Added "Post Due This Month" button on Recurring page
+- ✅ Enhanced category section with vibrant colors and gradients
+- ✅ Added AI Insights page with 4 insight types
+- ✅ Integrated OpenAI GPT-5.2 for financial analysis
 
 ### Data Model
 - **Users**: id, email, password_hash, name, household_id, currency, timezone
