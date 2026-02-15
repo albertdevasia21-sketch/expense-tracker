@@ -1624,6 +1624,23 @@ async def migrate_add_colors_and_subcategories(user: dict = Depends(get_current_
     
     return {"success": True, "message": "Migration complete"}
 
+# Migration endpoint to enable autopost for all recurring rules
+@api_router.post("/migrate/enable-autopost")
+async def migrate_enable_autopost(user: dict = Depends(get_current_user)):
+    """Enable autopost for all recurring rules"""
+    household_id = user["household_id"]
+    
+    result = await db.recurring_rules.update_many(
+        {"household_id": household_id, "active": True},
+        {"$set": {"autopost": True}}
+    )
+    
+    return {
+        "success": True, 
+        "updated_rules": result.modified_count,
+        "message": f"Enabled autopost for {result.modified_count} recurring rules. Refresh the page to auto-post due transactions."
+    }
+
 # ==================== SETUP ====================
 
 app.include_router(api_router)
