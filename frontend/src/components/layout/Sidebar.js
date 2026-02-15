@@ -13,7 +13,8 @@ import {
   LogOut,
   Moon,
   Sun,
-  X
+  X,
+  Brain
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -29,6 +30,7 @@ const navItems = [
   { path: "/budget", label: "Budget", icon: TargetIcon },
   { path: "/recurring", label: "Recurring", icon: RefreshCw },
   { path: "/goals", label: "Goals", icon: Flag },
+  { path: "/insights", label: "AI Insights", icon: Brain, highlight: true },
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 
