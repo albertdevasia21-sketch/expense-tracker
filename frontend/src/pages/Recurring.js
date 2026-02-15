@@ -273,6 +273,10 @@ export default function Recurring() {
         onMenuClick={onMenuClick}
         actions={
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handlePostDueThisMonth} data-testid="post-month-btn">
+              <Play className="w-4 h-4 mr-2" />
+              Post Due This Month
+            </Button>
             {rules.some(r => !r.autopost) && (
               <Button variant="outline" onClick={handleEnableAllAutopost} data-testid="enable-autopost-btn">
                 <RefreshCw className="w-4 h-4 mr-2" />
