@@ -1118,27 +1118,36 @@ async def process_autopost_recurring(user: dict = Depends(get_current_user)):
         rule_next_date = rule["next_date"]
         
         while rule_next_date <= today:
-            # Create transaction for this occurrence
-            amount = rule["amount"] if rule["type"] == "income" else -abs(rule["amount"])
-            notes = rule.get("notes") or ""
-            if notes:
-                notes = f"{notes} (Auto-posted)"
-            else:
-                notes = "(Auto-posted)"
-            transaction = Transaction(
-                household_id=household_id,
-                date=rule_next_date,
-                amount=amount,
-                type=rule["type"],
-                merchant_name=rule["name"],
-                category_id=rule.get("category_id"),
-                account_id=rule.get("account_id"),
-                member_id=rule.get("member_id"),
-                notes=notes,
-                is_recurring_instance=True
-            )
-            await db.transactions.insert_one(transaction.model_dump())
-            posted_transactions.append(transaction.model_dump())
+            # Check if transaction already exists for this date and rule
+            existing = await db.transactions.find_one({
+                "household_id": household_id,
+                "merchant_name": rule["name"],
+                "date": rule_next_date,
+                "is_recurring_instance": True
+            })
+            
+            if not existing:
+                # Create transaction for this occurrence
+                amount = rule["amount"] if rule["type"] == "income" else -abs(rule["amount"])
+                notes = rule.get("notes") or ""
+                if notes:
+                    notes = f"{notes} (Auto-posted)"
+                else:
+                    notes = "(Auto-posted)"
+                transaction = Transaction(
+                    household_id=household_id,
+                    date=rule_next_date,
+                    amount=amount,
+                    type=rule["type"],
+                    merchant_name=rule["name"],
+                    category_id=rule.get("category_id"),
+                    account_id=rule.get("account_id"),
+                    member_id=rule.get("member_id"),
+                    notes=notes,
+                    is_recurring_instance=True
+                )
+                await db.transactions.insert_one(transaction.model_dump())
+                posted_transactions.append(transaction.model_dump())
             
             # Calculate next date
             current_date = datetime.strptime(rule_next_date, "%Y-%m-%d")
@@ -1163,6 +1172,99 @@ async def process_autopost_recurring(user: dict = Depends(get_current_user)):
     
     return {
         "processed_rules": len(due_rules),
+        "posted_transactions": len(posted_transactions),
+        "transactions": posted_transactions
+    }
+
+@api_router.post("/recurring/post-month")
+async def post_recurring_for_month(month: str, user: dict = Depends(get_current_user)):
+    """Post all recurring transactions that fall within the specified month.
+    This allows users to see their expected recurring expenses for any month."""
+    from dateutil.relativedelta import relativedelta
+    
+    household_id = user["household_id"]
+    
+    # Calculate month boundaries
+    year, mon = map(int, month.split("-"))
+    month_start = f"{month}-01"
+    # Calculate last day of month
+    if mon == 12:
+        next_month = datetime(year + 1, 1, 1)
+    else:
+        next_month = datetime(year, mon + 1, 1)
+    last_day = (next_month - timedelta(days=1)).day
+    month_end = f"{month}-{last_day:02d}"
+    
+    # Find all recurring rules with autopost enabled where next_date falls within the month
+    rules = await db.recurring_rules.find(
+        {
+            "household_id": household_id,
+            "active": True,
+            "autopost": True,
+            "next_date": {"$gte": month_start, "$lte": month_end}
+        },
+        {"_id": 0}
+    ).to_list(500)
+    
+    posted_transactions = []
+    
+    for rule in rules:
+        rule_next_date = rule["next_date"]
+        
+        # Only process if within this month
+        if month_start <= rule_next_date <= month_end:
+            # Check if transaction already exists for this date and rule
+            existing = await db.transactions.find_one({
+                "household_id": household_id,
+                "merchant_name": rule["name"],
+                "date": rule_next_date,
+                "is_recurring_instance": True
+            })
+            
+            if not existing:
+                # Create transaction
+                amount = rule["amount"] if rule["type"] == "income" else -abs(rule["amount"])
+                notes = rule.get("notes") or ""
+                if notes:
+                    notes = f"{notes} (Auto-posted)"
+                else:
+                    notes = "(Auto-posted)"
+                transaction = Transaction(
+                    household_id=household_id,
+                    date=rule_next_date,
+                    amount=amount,
+                    type=rule["type"],
+                    merchant_name=rule["name"],
+                    category_id=rule.get("category_id"),
+                    account_id=rule.get("account_id"),
+                    member_id=rule.get("member_id"),
+                    notes=notes,
+                    is_recurring_instance=True
+                )
+                await db.transactions.insert_one(transaction.model_dump())
+                posted_transactions.append(transaction.model_dump())
+                
+                # Calculate and update next date
+                current_date = datetime.strptime(rule_next_date, "%Y-%m-%d")
+                if rule["frequency"] == "weekly":
+                    next_dt = current_date + timedelta(weeks=1)
+                elif rule["frequency"] == "biweekly":
+                    next_dt = current_date + timedelta(weeks=2)
+                elif rule["frequency"] == "monthly":
+                    next_dt = current_date + relativedelta(months=1)
+                elif rule["frequency"] == "yearly":
+                    next_dt = current_date + relativedelta(years=1)
+                else:
+                    next_dt = current_date + relativedelta(months=1)
+                
+                await db.recurring_rules.update_one(
+                    {"id": rule["id"]},
+                    {"$set": {"next_date": next_dt.strftime("%Y-%m-%d")}}
+                )
+    
+    return {
+        "month": month,
+        "processed_rules": len(rules),
         "posted_transactions": len(posted_transactions),
         "transactions": posted_transactions
     }
