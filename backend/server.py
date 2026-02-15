@@ -1444,6 +1444,13 @@ async def get_category_spending(month: str, user: dict = Depends(get_current_use
     """Get spending breakdown by category for the month"""
     household_id = user["household_id"]
     
+    # Vibrant fallback colors
+    FALLBACK_COLORS = [
+        "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", 
+        "#3B82F6", "#EF4444", "#06B6D4", "#F97316",
+        "#A855F7", "#14B8A6", "#6366F1", "#22C55E"
+    ]
+    
     # Get expense transactions for the month
     transactions = await db.transactions.find(
         {"household_id": household_id, "date": {"$regex": f"^{month}"}, "amount": {"$lt": 0}},
@@ -1460,16 +1467,22 @@ async def get_category_spending(month: str, user: dict = Depends(get_current_use
     
     # Group spending by category
     by_category = {}
+    color_idx = 0
     for tx in transactions:
         cat_id = tx.get("category_id")
         if cat_id and cat_id in cat_map:
             cat = cat_map[cat_id]
             cat_name = cat["category_name"]
             if cat_name not in by_category:
+                # Use category color if available, otherwise assign a vibrant fallback
+                cat_color = cat.get("color")
+                if not cat_color or cat_color == "#64748B":
+                    cat_color = FALLBACK_COLORS[color_idx % len(FALLBACK_COLORS)]
+                    color_idx += 1
                 by_category[cat_name] = {
                     "name": cat_name,
                     "amount": 0,
-                    "color": cat.get("color", "#64748B"),
+                    "color": cat_color,
                     "group": cat.get("group_name", "Other"),
                     "category_id": cat_id
                 }
