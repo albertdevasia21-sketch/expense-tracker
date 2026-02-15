@@ -277,8 +277,8 @@ export default function Budget() {
         </div>
 
         {/* Budget Sections */}
-        <BudgetSection title="Fixed Expenses" items={fixedBudgets} />
-        <BudgetSection title="Flexible Expenses" items={flexibleBudgets} />
+        <BudgetSection title="Fixed Expenses" items={fixedBudgets} isFixed={true} />
+        <BudgetSection title="Flexible Expenses" items={flexibleBudgets} isFixed={false} />
       </div>
 
       {/* Budget Dialog */}
