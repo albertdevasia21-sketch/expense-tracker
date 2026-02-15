@@ -147,8 +147,15 @@ export default function Budget() {
 
   const BudgetSection = ({ title, items }) => (
     <Card data-testid={`budget-section-${title.toLowerCase()}`}>
-      <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
+      <CardHeader className="bg-gradient-to-r from-secondary/50 to-transparent border-b border-border/50">
+        <CardTitle className="text-lg flex items-center gap-2">
+          {isFixed ? (
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+          ) : (
+            <div className="w-2 h-2 rounded-full bg-amber-500" />
+          )}
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         {items.length === 0 ? (
@@ -163,30 +170,38 @@ export default function Budget() {
               <span className="text-right">Actual</span>
               <span className="text-right">Remaining</span>
             </div>
-            {items.map((item) => (
-              <div 
-                key={item.id} 
-                className="budget-row group hover:bg-secondary/30 cursor-pointer"
-                onClick={() => openEdit(item)}
-              >
-                <div>
-                  <span className="font-medium">{item.category?.category_name || "Unknown"}</span>
-                  <div className="mt-1">
-                    <Progress 
-                      value={Math.min(item.percentage, 100)} 
-                      className={`h-1.5 ${item.percentage > 100 ? '[&>div]:bg-rose-500' : ''}`}
-                    />
+            {items.map((item) => {
+              const progressColor = item.percentage > 100 
+                ? 'bg-gradient-to-r from-rose-500 to-pink-500' 
+                : item.percentage > 80 
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500';
+              
+              return (
+                <div 
+                  key={item.id} 
+                  className="budget-row group hover:bg-secondary/50 cursor-pointer transition-colors duration-200"
+                  onClick={() => openEdit(item)}
+                >
+                  <div>
+                    <span className="font-medium">{item.category?.category_name || "Unknown"}</span>
+                    <div className="mt-1.5 h-2 bg-secondary rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${progressColor}`}
+                        style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                      />
+                    </div>
                   </div>
+                  <span className="text-right tabular-nums font-medium">{formatCurrency(item.amount)}</span>
+                  <span className={`text-right tabular-nums font-medium ${item.percentage > 100 ? 'text-rose-600 dark:text-rose-400' : ''}`}>
+                    {formatCurrency(item.spent)}
+                  </span>
+                  <span className={`text-right tabular-nums font-semibold ${item.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    {formatCurrency(item.remaining)}
+                  </span>
                 </div>
-                <span className="text-right tabular-nums">{formatCurrency(item.amount)}</span>
-                <span className={`text-right tabular-nums ${item.percentage > 100 ? 'text-rose-600 dark:text-rose-400' : ''}`}>
-                  {formatCurrency(item.spent)}
-                </span>
-                <span className={`text-right tabular-nums ${item.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                  {formatCurrency(item.remaining)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
