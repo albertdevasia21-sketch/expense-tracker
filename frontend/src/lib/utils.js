@@ -15,7 +15,10 @@ export function formatCurrency(amount, currency = "CAD") {
 }
 
 export function formatDate(dateString) {
-  const date = new Date(dateString);
+  // Parse date string as local time to avoid timezone shift
+  // Date strings like "2025-02-14" are interpreted as UTC by default
+  // Adding T00:00:00 forces local time interpretation
+  const date = new Date(dateString + "T00:00:00");
   return new Intl.DateTimeFormat("en-CA", {
     month: "short",
     day: "numeric",
@@ -24,7 +27,8 @@ export function formatDate(dateString) {
 }
 
 export function formatShortDate(dateString) {
-  const date = new Date(dateString);
+  // Parse date string as local time to avoid timezone shift
+  const date = new Date(dateString + "T00:00:00");
   return new Intl.DateTimeFormat("en-CA", {
     month: "short",
     day: "numeric",

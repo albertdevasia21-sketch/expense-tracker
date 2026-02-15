@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 
 const DataContext = createContext(null);
@@ -22,12 +22,31 @@ export const DataProvider = ({ children }) => {
   const [tags, setTags] = useState([]);
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const autopostProcessed = useRef(false);
+
+  // Process auto-post recurring transactions on app load
+  const processAutopostRecurring = useCallback(async () => {
+    if (!isAuthenticated || autopostProcessed.current) return;
+    
+    try {
+      const response = await api.post("/recurring/process-autopost");
+      if (response.data.posted_transactions > 0) {
+        console.log(`Auto-posted ${response.data.posted_transactions} recurring transaction(s)`);
+      }
+      autopostProcessed.current = true;
+    } catch (error) {
+      console.error("Failed to process autopost recurring:", error);
+    }
+  }, [api, isAuthenticated]);
 
   const fetchAll = useCallback(async () => {
     if (!isAuthenticated) return;
     
     setLoading(true);
     try {
+      // Process auto-post recurring transactions first
+      await processAutopostRecurring();
+      
       const [catRes, subcatRes, memRes, accRes, merRes, tagRes, goalRes] = await Promise.all([
         api.get("/categories"),
         api.get("/subcategories"),
@@ -50,11 +69,18 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [api, isAuthenticated]);
+  }, [api, isAuthenticated, processAutopostRecurring]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+  
+  // Reset autopost flag when user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      autopostProcessed.current = false;
+    }
+  }, [isAuthenticated]);
 
   const getCategoryById = (id) => categories.find((c) => c.id === id);
   const getSubcategoryById = (id) => subcategories.find((s) => s.id === id);
