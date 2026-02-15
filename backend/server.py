@@ -1743,7 +1743,266 @@ async def migrate_enable_autopost(user: dict = Depends(get_current_user)):
         "message": f"Enabled autopost for {result.modified_count} recurring rules. Refresh the page to auto-post due transactions."
     }
 
-# ==================== SETUP ====================
+# ==================== AI INSIGHTS ====================
+
+class InsightRequest(BaseModel):
+    month: str
+    insight_type: str  # spending_patterns, budget_recommendations, savings_opportunities, monthly_summary
+
+@api_router.post("/insights/generate")
+async def generate_insights(request: InsightRequest, user: dict = Depends(get_current_user)):
+    """Generate AI-powered insights using OpenAI GPT-5.2"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    household_id = user["household_id"]
+    month = request.month
+    
+    # Gather financial data for the month
+    transactions = await db.transactions.find(
+        {"household_id": household_id, "date": {"$regex": f"^{month}"}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    categories = await db.categories.find(
+        {"household_id": household_id, "is_active": True},
+        {"_id": 0}
+    ).to_list(500)
+    
+    budgets = await db.budgets.find(
+        {"household_id": household_id, "month": month},
+        {"_id": 0}
+    ).to_list(500)
+    
+    members = await db.household_members.find(
+        {"household_id": household_id, "is_active": True},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Create category map
+    cat_map = {c["id"]: c for c in categories}
+    member_map = {m["id"]: m["name"] for m in members}
+    
+    # Calculate spending by category
+    spending_by_category = {}
+    spending_by_member = {}
+    total_income = 0
+    total_expenses = 0
+    
+    for tx in transactions:
+        if tx["amount"] > 0:
+            total_income += tx["amount"]
+        else:
+            total_expenses += abs(tx["amount"])
+            cat_id = tx.get("category_id")
+            if cat_id and cat_id in cat_map:
+                cat_name = cat_map[cat_id]["category_name"]
+                spending_by_category[cat_name] = spending_by_category.get(cat_name, 0) + abs(tx["amount"])
+            
+            member_id = tx.get("member_id")
+            if member_id and member_id in member_map:
+                member_name = member_map[member_id]
+                spending_by_member[member_name] = spending_by_member.get(member_name, 0) + abs(tx["amount"])
+    
+    # Budget analysis
+    budget_analysis = []
+    for budget in budgets:
+        cat_id = budget.get("category_id")
+        if cat_id and cat_id in cat_map:
+            cat_name = cat_map[cat_id]["category_name"]
+            spent = spending_by_category.get(cat_name, 0)
+            budget_analysis.append({
+                "category": cat_name,
+                "budget": budget["amount"],
+                "spent": spent,
+                "remaining": budget["amount"] - spent,
+                "percentage": round((spent / budget["amount"] * 100) if budget["amount"] > 0 else 0, 1)
+            })
+    
+    # Prepare data summary for AI
+    data_summary = f"""
+Financial Data for {month}:
+- Total Income: ${total_income:,.2f}
+- Total Expenses: ${total_expenses:,.2f}
+- Net Savings: ${total_income - total_expenses:,.2f}
+- Savings Rate: {round((total_income - total_expenses) / total_income * 100 if total_income > 0 else 0, 1)}%
+
+Spending by Category:
+{chr(10).join([f"- {cat}: ${amt:,.2f}" for cat, amt in sorted(spending_by_category.items(), key=lambda x: -x[1])])}
+
+Spending by Household Member:
+{chr(10).join([f"- {member}: ${amt:,.2f}" for member, amt in spending_by_member.items()])}
+
+Budget Status:
+{chr(10).join([f"- {b['category']}: ${b['spent']:,.2f} / ${b['budget']:,.2f} ({b['percentage']}%)" for b in budget_analysis])}
+
+Transaction Count: {len(transactions)}
+"""
+    
+    # Generate insights based on type
+    system_prompts = {
+        "spending_patterns": """You are a financial analyst AI. Analyze the user's spending patterns and provide insights about:
+1. Top spending categories and trends
+2. Spending distribution across household members
+3. Any unusual or notable spending patterns
+4. Day-of-week or timing patterns if visible
+Keep your analysis concise, actionable, and friendly. Use bullet points and clear formatting.""",
+        
+        "budget_recommendations": """You are a personal finance advisor AI. Based on the spending data, provide:
+1. Specific budget adjustments for each category
+2. Categories where the user is overspending
+3. Realistic targets for the next month
+4. Tips for staying within budget
+Keep recommendations practical and achievable. Use bullet points.""",
+        
+        "savings_opportunities": """You are a savings optimization AI. Identify:
+1. Categories with potential for cost reduction
+2. Specific actionable ways to save money
+3. Subscription or recurring expense optimization
+4. Smart spending swaps
+Be specific with dollar amounts when possible. Keep suggestions realistic.""",
+        
+        "monthly_summary": """You are a financial summary AI. Provide a comprehensive monthly financial summary including:
+1. Overall financial health assessment
+2. Key highlights and achievements
+3. Areas of concern
+4. Month-over-month comparison insights
+5. One actionable goal for next month
+Keep the tone encouraging and constructive."""
+    }
+    
+    system_message = system_prompts.get(request.insight_type, system_prompts["monthly_summary"])
+    
+    try:
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="AI API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"insights-{household_id}-{month}-{request.insight_type}",
+            system_message=system_message
+        ).with_model("openai", "gpt-5.2")
+        
+        user_message = UserMessage(
+            text=f"Please analyze this financial data and provide insights:\n\n{data_summary}"
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Store the insight
+        insight_doc = {
+            "id": str(uuid.uuid4()),
+            "household_id": household_id,
+            "month": month,
+            "insight_type": request.insight_type,
+            "content": response,
+            "data_summary": {
+                "total_income": total_income,
+                "total_expenses": total_expenses,
+                "spending_by_category": spending_by_category,
+                "spending_by_member": spending_by_member
+            },
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.insights.insert_one(insight_doc)
+        
+        return {
+            "insight_type": request.insight_type,
+            "content": response,
+            "month": month,
+            "data": {
+                "total_income": total_income,
+                "total_expenses": total_expenses,
+                "net_savings": total_income - total_expenses,
+                "savings_rate": round((total_income - total_expenses) / total_income * 100 if total_income > 0 else 0, 1),
+                "spending_by_category": spending_by_category,
+                "budget_analysis": budget_analysis
+            }
+        }
+    except Exception as e:
+        logger.error(f"AI insight generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
+
+@api_router.get("/insights/history")
+async def get_insights_history(month: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Get previously generated insights"""
+    query = {"household_id": user["household_id"]}
+    if month:
+        query["month"] = month
+    
+    insights = await db.insights.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return insights
+
+@api_router.get("/insights/quick-stats")
+async def get_quick_stats(month: str, user: dict = Depends(get_current_user)):
+    """Get quick financial stats for the insights page"""
+    from dateutil.relativedelta import relativedelta
+    
+    household_id = user["household_id"]
+    
+    # Current month data
+    transactions = await db.transactions.find(
+        {"household_id": household_id, "date": {"$regex": f"^{month}"}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    income = sum(t["amount"] for t in transactions if t["amount"] > 0)
+    expenses = sum(abs(t["amount"]) for t in transactions if t["amount"] < 0)
+    
+    # Previous month for comparison
+    year, mon = map(int, month.split("-"))
+    prev_date = datetime(year, mon, 1) - relativedelta(months=1)
+    prev_month = prev_date.strftime("%Y-%m")
+    
+    prev_transactions = await db.transactions.find(
+        {"household_id": household_id, "date": {"$regex": f"^{prev_month}"}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    prev_income = sum(t["amount"] for t in prev_transactions if t["amount"] > 0)
+    prev_expenses = sum(abs(t["amount"]) for t in prev_transactions if t["amount"] < 0)
+    
+    # Top categories
+    categories = await db.categories.find({"household_id": household_id}, {"_id": 0}).to_list(500)
+    cat_map = {c["id"]: c for c in categories}
+    
+    spending_by_cat = {}
+    for tx in transactions:
+        if tx["amount"] < 0:
+            cat_id = tx.get("category_id")
+            if cat_id and cat_id in cat_map:
+                cat = cat_map[cat_id]
+                cat_name = cat["category_name"]
+                if cat_name not in spending_by_cat:
+                    spending_by_cat[cat_name] = {"amount": 0, "color": cat.get("color", "#64748B")}
+                spending_by_cat[cat_name]["amount"] += abs(tx["amount"])
+    
+    top_categories = sorted(
+        [{"name": k, "amount": v["amount"], "color": v["color"]} for k, v in spending_by_cat.items()],
+        key=lambda x: -x["amount"]
+    )[:5]
+    
+    return {
+        "current_month": {
+            "income": income,
+            "expenses": expenses,
+            "savings": income - expenses,
+            "savings_rate": round((income - expenses) / income * 100 if income > 0 else 0, 1),
+            "transaction_count": len(transactions)
+        },
+        "previous_month": {
+            "income": prev_income,
+            "expenses": prev_expenses,
+            "savings": prev_income - prev_expenses
+        },
+        "changes": {
+            "income_change": income - prev_income,
+            "income_change_pct": round((income - prev_income) / prev_income * 100 if prev_income > 0 else 0, 1),
+            "expenses_change": expenses - prev_expenses,
+            "expenses_change_pct": round((expenses - prev_expenses) / prev_expenses * 100 if prev_expenses > 0 else 0, 1)
+        },
+        "top_categories": top_categories
+    }
 
 app.include_router(api_router)
 
