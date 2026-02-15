@@ -15,44 +15,44 @@ from datetime import datetime, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-# Test user credentials
+# Test user credentials - unique per test run
 TEST_EMAIL = f"test_autopost_{uuid.uuid4().hex[:8]}@example.com"
 TEST_PASSWORD = "password123"
 TEST_NAME = "Test User"
 
 
-class TestSetup:
-    """Setup fixtures for all tests"""
-    
-    @pytest.fixture(scope="class")
-    def api_client(self):
-        """Shared requests session"""
-        session = requests.Session()
-        session.headers.update({"Content-Type": "application/json"})
-        return session
-    
-    @pytest.fixture(scope="class")
-    def auth_data(self, api_client):
-        """Register a new user and return auth data"""
-        response = api_client.post(f"{BASE_URL}/api/auth/register", json={
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD,
-            "name": TEST_NAME
-        })
-        assert response.status_code == 200, f"Registration failed: {response.text}"
-        data = response.json()
-        assert "token" in data
-        assert "user" in data
-        return data
-    
-    @pytest.fixture(scope="class")
-    def authenticated_client(self, api_client, auth_data):
-        """Session with auth header"""
-        api_client.headers.update({"Authorization": f"Bearer {auth_data['token']}"})
-        return api_client
+# Module-scoped fixtures
+@pytest.fixture(scope="module")
+def api_client():
+    """Shared requests session"""
+    session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
+    return session
 
 
-class TestDateBugFix(TestSetup):
+@pytest.fixture(scope="module")
+def auth_data(api_client):
+    """Register a new user and return auth data"""
+    response = api_client.post(f"{BASE_URL}/api/auth/register", json={
+        "email": TEST_EMAIL,
+        "password": TEST_PASSWORD,
+        "name": TEST_NAME
+    })
+    assert response.status_code == 200, f"Registration failed: {response.text}"
+    data = response.json()
+    assert "token" in data
+    assert "user" in data
+    return data
+
+
+@pytest.fixture(scope="module")
+def authenticated_client(api_client, auth_data):
+    """Session with auth header"""
+    api_client.headers.update({"Authorization": f"Bearer {auth_data['token']}"})
+    return api_client
+
+
+class TestDateBugFix:
     """Test that dates are stored and returned correctly without timezone shift"""
     
     def test_create_transaction_feb_14_stored_correctly(self, authenticated_client):
@@ -112,7 +112,7 @@ class TestDateBugFix(TestSetup):
             print(f"✓ Date {test_date} stored correctly")
 
 
-class TestAutopostRecurring(TestSetup):
+class TestAutopostRecurring:
     """Test auto-post recurring transactions feature"""
     
     def test_process_autopost_endpoint_exists(self, authenticated_client):
@@ -223,7 +223,7 @@ class TestAutopostRecurring(TestSetup):
             print(f"✓ Recurring rule next_date updated from {past_date} to {updated_rule['next_date']}")
 
 
-class TestDashboardIntegration(TestSetup):
+class TestDashboardIntegration:
     """Test that auto-posted transactions appear in dashboard"""
     
     def test_autoposted_transactions_in_dashboard_summary(self, authenticated_client):
@@ -282,7 +282,7 @@ class TestDashboardIntegration(TestSetup):
         print(f"✓ Spending chart: Current month cumulative spending=${last_spending}")
 
 
-class TestRecurringRuleManagement(TestSetup):
+class TestRecurringRuleManagement:
     """Test recurring rule CRUD operations"""
     
     def test_create_recurring_rule_without_autopost(self, authenticated_client):
@@ -345,7 +345,7 @@ class TestRecurringRuleManagement(TestSetup):
         print(f"  - Test rules: {len(test_rules)}")
 
 
-class TestTransactionFiltering(TestSetup):
+class TestTransactionFiltering:
     """Test transaction filtering and retrieval"""
     
     def test_filter_transactions_by_month(self, authenticated_client):
@@ -375,16 +375,6 @@ class TestTransactionFiltering(TestSetup):
         recurring_instances = [t for t in transactions if t.get("is_recurring_instance")]
         
         print(f"✓ Found {len(recurring_instances)} recurring instance transactions out of {len(transactions)} total")
-
-
-# Cleanup fixture
-@pytest.fixture(scope="module", autouse=True)
-def cleanup_test_data():
-    """Cleanup test data after all tests complete"""
-    yield
-    # Note: In a real scenario, we'd delete TEST_ prefixed data here
-    # For now, we leave it as the test user is unique per run
-    print("\n✓ Test suite completed")
 
 
 if __name__ == "__main__":
