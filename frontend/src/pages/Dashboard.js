@@ -269,52 +269,77 @@ export default function Dashboard() {
         </Card>
 
         {/* Monthly Spending by Category */}
-        <Card data-testid="category-spending-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Monthly Spending by Category</CardTitle>
-            <span className="text-sm text-muted-foreground">
-              Total: {formatCurrency(categorySpending.total)}
-            </span>
+        <Card data-testid="category-spending-card" className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-violet-500/5 to-purple-500/5 border-b border-border/50">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Target className="w-4 h-4 text-white" />
+              </div>
+              Monthly Spending by Category
+            </CardTitle>
+            <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20">
+              <span className="text-sm font-semibold text-violet-600 dark:text-violet-400">
+                {formatCurrency(categorySpending.total)}
+              </span>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-5">
             {categorySpending.categories.length === 0 ? (
               <div className="text-center text-muted-foreground py-6">
                 No spending this month
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {categorySpending.categories.slice(0, 8).map((cat, idx) => (
                   <div key={cat.name} className="group">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
                         <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: cat.color }}
+                          className="w-4 h-4 rounded-md shadow-sm" 
+                          style={{ 
+                            backgroundColor: cat.color,
+                            boxShadow: `0 2px 8px ${cat.color}40`
+                          }}
                         />
                         <span className="text-sm font-medium">{cat.name}</span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">{cat.percentage}%</span>
-                        <span className="text-sm font-semibold tabular-nums">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <div 
+                            className="w-2 h-2 rounded-full animate-pulse"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full" 
+                            style={{ 
+                              backgroundColor: `${cat.color}15`,
+                              color: cat.color 
+                            }}>
+                            {cat.percentage}%
+                          </span>
+                        </div>
+                        <span className="text-sm font-bold tabular-nums min-w-[80px] text-right">
                           {formatCurrency(cat.amount)}
                         </span>
                       </div>
                     </div>
-                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-3 bg-secondary/60 rounded-full overflow-hidden shadow-inner">
                       <div 
-                        className="h-full rounded-full transition-all duration-500"
+                        className="h-full rounded-full transition-all duration-700 ease-out relative"
                         style={{ 
                           width: `${cat.percentage}%`,
-                          backgroundColor: cat.color
+                          background: `linear-gradient(90deg, ${cat.color}, ${cat.color}CC)`,
+                          boxShadow: `0 0 10px ${cat.color}60`
                         }}
-                      />
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
+                      </div>
                     </div>
                   </div>
                 ))}
                 {categorySpending.categories.length > 8 && (
                   <Link 
                     to="/reports" 
-                    className="text-sm text-blue-500 hover:underline flex items-center gap-1 pt-2"
+                    className="text-sm text-violet-500 hover:text-violet-600 font-medium flex items-center gap-1 pt-2 transition-colors"
                   >
                     View all categories <ArrowRight className="w-3 h-3" />
                   </Link>
