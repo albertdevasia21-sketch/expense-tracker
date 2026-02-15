@@ -88,12 +88,23 @@ export const Sidebar = ({ isOpen, onClose }) => {
                   to={item.path}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    cn("sidebar-item", isActive && "active")
+                    cn(
+                      "sidebar-item", 
+                      isActive && "active",
+                      item.highlight && "bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20"
+                    )
                   }
                   data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <item.icon className={cn("w-5 h-5", item.highlight && "text-violet-500")} />
+                  <span className={item.highlight ? "text-violet-600 dark:text-violet-400 font-medium" : ""}>
+                    {item.label}
+                  </span>
+                  {item.highlight && (
+                    <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500 text-white font-medium">
+                      NEW
+                    </span>
+                  )}
                 </NavLink>
               </li>
             ))}
