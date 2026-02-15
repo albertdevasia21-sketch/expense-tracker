@@ -164,11 +164,60 @@
 
 /* Card hover effect */
 .card-hover {
-    @apply transition-shadow duration-200;
+    @apply transition-all duration-300 ease-out;
 }
 
 .card-hover:hover {
-    @apply shadow-md;
+    @apply shadow-lg -translate-y-0.5;
+}
+
+/* Enhanced card styles */
+.card-glass {
+    @apply backdrop-blur-sm bg-card/80 border border-white/20 shadow-xl;
+}
+
+/* Glowing effects */
+.glow-sm {
+    box-shadow: 0 0 15px -3px currentColor;
+}
+
+.glow-md {
+    box-shadow: 0 0 25px -5px currentColor;
+}
+
+/* Animated gradient background */
+.animated-gradient {
+    background: linear-gradient(-45deg, #6366f1, #8b5cf6, #a855f7, #6366f1);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Pulse animation for live indicators */
+.pulse-live {
+    animation: pulseLive 2s ease-in-out infinite;
+}
+
+@keyframes pulseLive {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Shimmer effect for loading */
+.shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 /* Number formatting */
