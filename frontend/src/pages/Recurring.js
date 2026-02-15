@@ -159,6 +159,20 @@ export default function Recurring() {
     }
   };
 
+  const handleEnableAllAutopost = async () => {
+    try {
+      const response = await api.post("/migrate/enable-autopost");
+      toast.success(response.data.message);
+      await fetchRules();
+      // Trigger autopost to create due transactions
+      await api.post("/recurring/process-autopost");
+      toast.success("Due transactions have been auto-posted!");
+    } catch (error) {
+      console.error("Failed to enable autopost:", error);
+      toast.error("Failed to enable autopost");
+    }
+  };
+
   const RuleCard = ({ rule }) => {
     const member = getMemberById(rule.member_id);
     const category = getCategoryById(rule.category_id);
