@@ -166,10 +166,30 @@ export default function Recurring() {
       await fetchRules();
       // Trigger autopost to create due transactions
       await api.post("/recurring/process-autopost");
+      // Also post transactions for current month
+      await api.post(`/recurring/post-month?month=${month}`);
       toast.success("Due transactions have been auto-posted!");
     } catch (error) {
       console.error("Failed to enable autopost:", error);
       toast.error("Failed to enable autopost");
+    }
+  };
+
+  const handlePostDueThisMonth = async () => {
+    try {
+      // First process any past-due autopost transactions
+      await api.post("/recurring/process-autopost");
+      // Then post transactions due this month
+      const response = await api.post(`/recurring/post-month?month=${month}`);
+      if (response.data.posted_transactions > 0) {
+        toast.success(`Posted ${response.data.posted_transactions} recurring transaction(s) for ${month}`);
+      } else {
+        toast.info("No new transactions to post for this month");
+      }
+      await fetchRules();
+    } catch (error) {
+      console.error("Failed to post transactions:", error);
+      toast.error("Failed to post transactions");
     }
   };
 
