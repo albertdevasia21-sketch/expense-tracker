@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Plus, Building2, PiggyBank, CreditCard, Wallet, Landmark, Banknote, Pencil, Trash2 } from "lucide-react";
+import { Plus, Building2, PiggyBank, CreditCard, Wallet, Landmark, Banknote, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
