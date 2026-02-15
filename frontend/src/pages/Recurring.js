@@ -252,10 +252,18 @@ export default function Recurring() {
         setMonth={setMonth}
         onMenuClick={onMenuClick}
         actions={
-          <Button onClick={() => openNew("expense")} data-testid="add-recurring-btn">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Recurring
-          </Button>
+          <div className="flex gap-2">
+            {rules.some(r => !r.autopost) && (
+              <Button variant="outline" onClick={handleEnableAllAutopost} data-testid="enable-autopost-btn">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Enable Auto-post All
+              </Button>
+            )}
+            <Button onClick={() => openNew("expense")} data-testid="add-recurring-btn">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Recurring
+            </Button>
+          </div>
         }
       />
 
