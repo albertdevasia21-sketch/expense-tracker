@@ -227,20 +227,20 @@
 
 /* Sidebar active state */
 .sidebar-item {
-    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground transition-colors duration-150;
+    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground transition-all duration-200;
 }
 
 .sidebar-item:hover {
-    @apply bg-secondary text-foreground;
+    @apply bg-secondary/80 text-foreground scale-[1.02];
 }
 
 .sidebar-item.active {
-    @apply bg-accent/10 text-accent font-medium;
+    @apply bg-gradient-to-r from-accent/15 to-accent/5 text-accent font-medium shadow-sm;
 }
 
 .sidebar-item.active::before {
     content: '';
-    @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent rounded-r-full;
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-accent to-violet-500 rounded-r-full;
 }
 
 /* Member badge colors */
