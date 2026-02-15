@@ -192,16 +192,16 @@ export default function Transactions() {
 
         {/* Summary */}
         <div className="flex gap-4 text-sm">
-          <div className="px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-            Income: {formatCurrency(totalIncome)}
+          <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-400 font-medium shadow-sm border border-emerald-200/50 dark:border-emerald-700/30">
+            <span className="text-emerald-500 mr-1">↑</span> Income: {formatCurrency(totalIncome)}
           </div>
-          <div className="px-3 py-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
-            Expenses: {formatCurrency(totalExpenses)}
+          <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/30 text-rose-700 dark:text-rose-400 font-medium shadow-sm border border-rose-200/50 dark:border-rose-700/30">
+            <span className="text-rose-500 mr-1">↓</span> Expenses: {formatCurrency(totalExpenses)}
           </div>
         </div>
 
         {/* Transactions List */}
-        <Card data-testid="transactions-list">
+        <Card data-testid="transactions-list" className="overflow-hidden shadow-sm">
           <CardContent className="p-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -221,7 +221,7 @@ export default function Transactions() {
               <div>
                 {sortedDates.map((date) => (
                   <div key={date}>
-                    <div className="px-4 py-2 bg-secondary/50 text-sm font-medium sticky top-0">
+                    <div className="px-4 py-2.5 bg-gradient-to-r from-secondary/80 to-secondary/40 text-sm font-semibold sticky top-0 border-b border-border/50 backdrop-blur-sm">
                       {formatDate(date)}
                     </div>
                     {groupedTransactions[date].map((tx) => {
