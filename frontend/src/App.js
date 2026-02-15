@@ -18,6 +18,7 @@ import Budget from "./pages/Budget";
 import Recurring from "./pages/Recurring";
 import Goals from "./pages/Goals";
 import Settings from "./pages/Settings";
+import Insights from "./pages/Insights";
 
 import "./App.css";
 
@@ -98,6 +99,7 @@ const AppContent = () => {
         <Route path="budget" element={<Budget />} />
         <Route path="recurring" element={<Recurring />} />
         <Route path="goals" element={<Goals />} />
+        <Route path="insights" element={<Insights />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
