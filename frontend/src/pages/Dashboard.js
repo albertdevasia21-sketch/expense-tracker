@@ -290,52 +290,61 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {categorySpending.categories.slice(0, 8).map((cat, idx) => (
-                  <div key={cat.name} className="group">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-md shadow-sm" 
-                          style={{ 
-                            backgroundColor: cat.color,
-                            boxShadow: `0 2px 8px ${cat.color}40`
-                          }}
-                        />
-                        <span className="text-sm font-medium">{cat.name}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1.5">
+                {categorySpending.categories.slice(0, 8).map((cat, idx) => {
+                  // Vibrant fallback colors if category doesn't have one
+                  const fallbackColors = [
+                    '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', 
+                    '#3B82F6', '#EF4444', '#06B6D4', '#F97316'
+                  ];
+                  const categoryColor = cat.color || fallbackColors[idx % fallbackColors.length];
+                  
+                  return (
+                    <div key={cat.name} className="group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
                           <div 
-                            className="w-2 h-2 rounded-full animate-pulse"
-                            style={{ backgroundColor: cat.color }}
-                          />
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full" 
+                            className="w-4 h-4 rounded-md shadow-sm" 
                             style={{ 
-                              backgroundColor: `${cat.color}15`,
-                              color: cat.color 
-                            }}>
-                            {cat.percentage}%
+                              backgroundColor: categoryColor,
+                              boxShadow: `0 2px 8px ${categoryColor}40`
+                            }}
+                          />
+                          <span className="text-sm font-medium">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5">
+                            <div 
+                              className="w-2 h-2 rounded-full animate-pulse"
+                              style={{ backgroundColor: categoryColor }}
+                            />
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full" 
+                              style={{ 
+                                backgroundColor: `${categoryColor}15`,
+                                color: categoryColor 
+                              }}>
+                              {cat.percentage}%
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold tabular-nums min-w-[80px] text-right">
+                            {formatCurrency(cat.amount)}
                           </span>
                         </div>
-                        <span className="text-sm font-bold tabular-nums min-w-[80px] text-right">
-                          {formatCurrency(cat.amount)}
-                        </span>
+                      </div>
+                      <div className="h-3 bg-secondary/60 rounded-full overflow-hidden shadow-inner">
+                        <div 
+                          className="h-full rounded-full transition-all duration-700 ease-out relative"
+                          style={{ 
+                            width: `${cat.percentage}%`,
+                            background: `linear-gradient(90deg, ${categoryColor}, ${categoryColor}CC)`,
+                            boxShadow: `0 0 10px ${categoryColor}60`
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
+                        </div>
                       </div>
                     </div>
-                    <div className="h-3 bg-secondary/60 rounded-full overflow-hidden shadow-inner">
-                      <div 
-                        className="h-full rounded-full transition-all duration-700 ease-out relative"
-                        style={{ 
-                          width: `${cat.percentage}%`,
-                          background: `linear-gradient(90deg, ${cat.color}, ${cat.color}CC)`,
-                          boxShadow: `0 0 10px ${cat.color}60`
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {categorySpending.categories.length > 8 && (
                   <Link 
                     to="/reports" 
