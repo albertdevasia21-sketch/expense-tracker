@@ -142,34 +142,44 @@ export default function Accounts() {
       <div className="page-content space-y-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card data-testid="total-balance-card">
+          <Card data-testid="total-balance-card" className="card-hover overflow-hidden">
+            <div className={`h-1 ${totalBalance >= 0 ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-rose-500 to-pink-500'}`} />
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Net Worth</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Wallet className="w-4 h-4" />
+                Net Worth
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold tabular-nums ${totalBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+              <div className={`text-3xl font-bold tabular-nums ${totalBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                 {formatCurrency(totalBalance)}
               </div>
             </CardContent>
           </Card>
           
-          <Card data-testid="total-assets-card">
+          <Card data-testid="total-assets-card" className="card-hover border-l-4 border-l-emerald-500">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Assets</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                Total Assets
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 {formatCurrency(totalAssets)}
               </div>
             </CardContent>
           </Card>
           
-          <Card data-testid="total-liabilities-card">
+          <Card data-testid="total-liabilities-card" className="card-hover border-l-4 border-l-rose-500">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Liabilities</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 text-rose-500" />
+                Total Liabilities
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+              <div className="text-3xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                 {formatCurrency(totalLiabilities)}
               </div>
             </CardContent>
@@ -177,7 +187,7 @@ export default function Accounts() {
         </div>
 
         {/* Accounts List */}
-        <Card data-testid="accounts-list">
+        <Card data-testid="accounts-list" className="shadow-sm">
           <CardHeader>
             <CardTitle>All Accounts</CardTitle>
           </CardHeader>
