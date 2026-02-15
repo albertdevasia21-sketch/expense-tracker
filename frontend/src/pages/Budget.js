@@ -145,8 +145,8 @@ export default function Budget() {
     }
   };
 
-  const BudgetSection = ({ title, items }) => (
-    <Card data-testid={`budget-section-${title.toLowerCase()}`}>
+  const BudgetSection = ({ title, items, isFixed }) => (
+    <Card data-testid={`budget-section-${title.toLowerCase()}`} className="shadow-sm">
       <CardHeader className="bg-gradient-to-r from-secondary/50 to-transparent border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
           {isFixed ? (
