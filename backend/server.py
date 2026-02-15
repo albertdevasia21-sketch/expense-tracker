@@ -1120,6 +1120,11 @@ async def process_autopost_recurring(user: dict = Depends(get_current_user)):
         while rule_next_date <= today:
             # Create transaction for this occurrence
             amount = rule["amount"] if rule["type"] == "income" else -abs(rule["amount"])
+            notes = rule.get("notes") or ""
+            if notes:
+                notes = f"{notes} (Auto-posted)"
+            else:
+                notes = "(Auto-posted)"
             transaction = Transaction(
                 household_id=household_id,
                 date=rule_next_date,
@@ -1129,7 +1134,7 @@ async def process_autopost_recurring(user: dict = Depends(get_current_user)):
                 category_id=rule.get("category_id"),
                 account_id=rule.get("account_id"),
                 member_id=rule.get("member_id"),
-                notes=f"{rule.get('notes', '')} (Auto-posted)".strip(),
+                notes=notes,
                 is_recurring_instance=True
             )
             await db.transactions.insert_one(transaction.model_dump())
