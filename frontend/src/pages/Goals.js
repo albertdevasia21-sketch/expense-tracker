@@ -147,20 +147,44 @@ export default function Goals() {
 
       <div className="page-content space-y-6">
         {/* Summary */}
-        <Card data-testid="goals-summary-card">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold">Overall Progress</h3>
-                <p className="text-muted-foreground">
-                  {formatCurrency(totalCurrent)} of {formatCurrency(totalTarget)} saved
-                </p>
-              </div>
-              <div className="flex-1 max-w-md">
-                <Progress value={Math.min(overallProgress, 100)} className="h-3" />
-                <p className="text-sm text-muted-foreground mt-1 text-right">
-                  {overallProgress.toFixed(1)}% complete
-                </p>
+        <Card data-testid="goals-summary-card" className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-6 text-white">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Overall Progress</h3>
+                  <p className="text-white/80">
+                    {formatCurrency(totalCurrent)} of {formatCurrency(totalTarget)} saved
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl font-bold">
+                    {overallProgress.toFixed(0)}%
+                  </div>
+                  <div className="w-32 h-32 relative">
+                    <svg className="w-full h-full -rotate-90">
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.2)"
+                        strokeWidth="12"
+                      />
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="12"
+                        strokeLinecap="round"
+                        strokeDasharray={`${overallProgress * 3.52} 352`}
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
