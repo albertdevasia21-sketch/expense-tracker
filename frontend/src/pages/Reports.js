@@ -316,39 +316,63 @@ export default function Reports() {
         {/* Category Summary Table + Pie Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Category Summary Table */}
-          <Card data-testid="category-table-card">
-            <CardHeader>
-              <CardTitle>Spending by Category</CardTitle>
+          <Card data-testid="category-table-card" className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-violet-500/10 to-purple-500/5 border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                  <Receipt className="w-4 h-4 text-white" />
+                </div>
+                Spending by Category
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {summary?.by_category?.length > 0 ? (
-                <div className="space-y-3">
-                  {summary.by_category.slice(0, 10).map((item) => (
-                    <div key={item.name} className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full shrink-0" 
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium truncate">{item.name}</span>
-                          <span className="text-sm font-semibold tabular-nums">{formatCurrency(item.value)}</span>
-                        </div>
-                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div className="space-y-4">
+                  {summary.by_category.slice(0, 10).map((item, idx) => {
+                    const fallbackColors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#06B6D4', '#F97316'];
+                    const itemColor = item.color || fallbackColors[idx % fallbackColors.length];
+                    
+                    return (
+                      <div key={item.name} className="group">
+                        <div className="flex items-center gap-3">
                           <div 
-                            className="h-full rounded-full"
+                            className="w-4 h-4 rounded-md shrink-0 shadow-sm" 
                             style={{ 
-                              width: `${item.percentage}%`,
-                              backgroundColor: item.color
+                              backgroundColor: itemColor,
+                              boxShadow: `0 2px 8px ${itemColor}40`
                             }}
                           />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-sm font-medium truncate">{item.name}</span>
+                              <div className="flex items-center gap-3">
+                                <span 
+                                  className="text-xs font-medium px-2 py-0.5 rounded-full"
+                                  style={{ 
+                                    backgroundColor: `${itemColor}15`,
+                                    color: itemColor 
+                                  }}
+                                >
+                                  {item.percentage}%
+                                </span>
+                                <span className="text-sm font-bold tabular-nums">{formatCurrency(item.value)}</span>
+                              </div>
+                            </div>
+                            <div className="h-2.5 bg-secondary/60 rounded-full overflow-hidden shadow-inner">
+                              <div 
+                                className="h-full rounded-full transition-all duration-700"
+                                style={{ 
+                                  width: `${item.percentage}%`,
+                                  background: `linear-gradient(90deg, ${itemColor}, ${itemColor}CC)`,
+                                  boxShadow: `0 0 8px ${itemColor}50`
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground w-12 text-right shrink-0">
-                        {item.percentage}%
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="h-[250px] flex items-center justify-center text-muted-foreground">
