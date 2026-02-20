@@ -257,51 +257,55 @@ export default function Reports() {
         {/* KPI Cards */}
         {summary && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20" data-testid="total-spent-card">
+            <Card className="card-hover overflow-hidden" data-testid="total-spent-card">
+              <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-blue-500" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <DollarSign className="w-5 h-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold tabular-nums">{formatCurrency(summary.total_spent)}</div>
+                <div className="text-3xl font-bold tabular-nums text-blue-600 dark:text-blue-400">{formatCurrency(summary.total_spent)}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20" data-testid="transactions-count-card">
+            <Card className="card-hover overflow-hidden" data-testid="transactions-count-card">
+              <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Transactions</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <Receipt className="w-4 h-4 text-purple-500" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/25">
+                  <Receipt className="w-5 h-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold tabular-nums">{summary.transaction_count}</div>
+                <div className="text-3xl font-bold tabular-nums text-violet-600 dark:text-violet-400">{summary.transaction_count}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20" data-testid="avg-transaction-card">
+            <Card className="card-hover overflow-hidden" data-testid="avg-transaction-card">
+              <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Avg Transaction</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                  <TrendingDown className="w-4 h-4 text-amber-500" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
+                  <TrendingDown className="w-5 h-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold tabular-nums">{formatCurrency(summary.avg_transaction)}</div>
+                <div className="text-3xl font-bold tabular-nums text-amber-600 dark:text-amber-400">{formatCurrency(summary.avg_transaction)}</div>
               </CardContent>
             </Card>
 
-            <Card className={`bg-gradient-to-br ${summary.budget_usage > 100 ? 'from-red-500/10 to-red-600/5 border-red-500/20' : 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20'}`} data-testid="budget-usage-card">
+            <Card className="card-hover overflow-hidden" data-testid="budget-usage-card">
+              <div className={`h-1 ${summary.budget_usage > 100 ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`} />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Budget Usage</CardTitle>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${summary.budget_usage > 100 ? 'bg-red-500/20' : 'bg-emerald-500/20'}`}>
-                  <Target className={`w-4 h-4 ${summary.budget_usage > 100 ? 'text-red-500' : 'text-emerald-500'}`} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${summary.budget_usage > 100 ? 'bg-gradient-to-br from-rose-500 to-pink-500 shadow-rose-500/25' : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-emerald-500/25'}`}>
+                  <Target className="w-5 h-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold tabular-nums ${summary.budget_usage > 100 ? 'text-red-600 dark:text-red-400' : ''}`}>
+                <div className={`text-3xl font-bold tabular-nums ${summary.budget_usage > 100 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                   {summary.budget_usage}%
                 </div>
               </CardContent>
