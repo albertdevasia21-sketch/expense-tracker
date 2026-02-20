@@ -176,7 +176,7 @@ export const TransactionDrawer = ({
     <>
       <div className="drawer-overlay" onClick={onClose} data-testid="drawer-overlay" />
       <div className="drawer-content" data-testid="transaction-drawer">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-violet-500/5 to-purple-500/5">
           <h2 className="text-lg font-semibold font-['Outfit']">
             {transaction ? "Edit Transaction" : "Add Transaction"}
           </h2>
@@ -186,7 +186,7 @@ export const TransactionDrawer = ({
                 variant="ghost"
                 size="icon"
                 onClick={handleDelete}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 data-testid="delete-transaction-btn"
               >
                 <Trash2 className="w-5 h-5" />
@@ -199,21 +199,25 @@ export const TransactionDrawer = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Type selector */}
-          <div className="flex gap-2 p-1 bg-secondary rounded-lg">
-            {["expense", "income", "transfer"].map((type) => (
+          {/* Type selector - styled tabs */}
+          <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl border border-border/50">
+            {[
+              { type: "expense", label: "Expense", color: "from-rose-500 to-pink-500" },
+              { type: "income", label: "Income", color: "from-emerald-500 to-teal-500" },
+              { type: "transfer", label: "Transfer", color: "from-blue-500 to-cyan-500" }
+            ].map(({ type, label, color }) => (
               <button
                 key={type}
                 type="button"
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
                   formData.type === type
-                    ? "bg-card shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? `bg-gradient-to-r ${color} text-white shadow-lg`
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
                 onClick={() => setFormData((prev) => ({ ...prev, type, category_id: "", subcategory_id: "" }))}
                 data-testid={`type-${type}-btn`}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {label}
               </button>
             ))}
           </div>
