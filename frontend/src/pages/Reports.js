@@ -383,27 +383,46 @@ export default function Reports() {
           </Card>
 
           {/* Pie Chart */}
-          <Card data-testid="category-pie-chart">
-            <CardHeader>
-              <CardTitle>Distribution</CardTitle>
+          <Card data-testid="category-pie-chart" className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-pink-500/10 to-rose-500/5 border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-white" />
+                </div>
+                Distribution
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {summary?.by_category?.length > 0 ? (
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={summary.by_category.slice(0, 8)}
+                        data={summary.by_category.slice(0, 8).map((item, idx) => {
+                          const fallbackColors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#06B6D4', '#F97316'];
+                          return {
+                            ...item,
+                            color: item.color || fallbackColors[idx % fallbackColors.length]
+                          };
+                        })}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={2}
+                        innerRadius={70}
+                        outerRadius={110}
+                        paddingAngle={3}
                         dataKey="value"
+                        stroke="none"
                       >
-                        {summary.by_category.slice(0, 8).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
+                        {summary.by_category.slice(0, 8).map((entry, index) => {
+                          const fallbackColors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#06B6D4', '#F97316'];
+                          return (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={entry.color || fallbackColors[index % fallbackColors.length]}
+                              className="transition-all duration-300 hover:opacity-80"
+                            />
+                          );
+                        })}
                       </Pie>
                       <Tooltip content={<CustomTooltip />} />
                     </PieChart>
@@ -421,20 +440,38 @@ export default function Reports() {
         {/* Spending Over Time + By Member */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Spending Over Time */}
-          <Card data-testid="spending-line-chart">
-            <CardHeader>
-              <CardTitle>Spending Over Time</CardTitle>
+          <Card data-testid="spending-line-chart" className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                  <TrendingDown className="w-4 h-4 text-white" />
+                </div>
+                Spending Over Time
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {spendingOverTime.length > 0 ? (
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={spendingOverTime}>
+                      <defs>
+                        <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${v}`} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Line type="monotone" dataKey="amount" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="amount" 
+                        stroke="#3B82F6" 
+                        strokeWidth={3} 
+                        dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: '#3B82F6' }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -447,7 +484,7 @@ export default function Reports() {
           </Card>
 
           {/* By Member */}
-          <Card data-testid="member-bar-chart">
+          <Card data-testid="member-bar-chart" className="overflow-hidden">
             <CardHeader>
               <CardTitle>Spending by Household Member</CardTitle>
             </CardHeader>
