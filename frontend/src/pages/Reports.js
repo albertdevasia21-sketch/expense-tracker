@@ -485,21 +485,32 @@ export default function Reports() {
 
           {/* By Member */}
           <Card data-testid="member-bar-chart" className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>Spending by Household Member</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/5 border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-white" />
+                </div>
+                Spending by Member
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {summary?.by_member?.length > 0 ? (
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={summary.by_member} layout="vertical">
-                      <XAxis type="number" tickFormatter={(v) => `$${v}`} />
-                      <YAxis type="category" dataKey="name" width={80} />
+                      <XAxis type="number" tickFormatter={(v) => `$${v}`} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis type="category" dataKey="name" width={80} stroke="hsl(var(--muted-foreground))" />
                       <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--secondary))' }} />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                        {summary.by_member.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color || '#3B82F6'} />
-                        ))}
+                      <Bar dataKey="value" radius={[0, 8, 8, 0]}>
+                        {summary.by_member.map((entry, index) => {
+                          const memberColors = ['#3B82F6', '#EC4899', '#10B981', '#F59E0B'];
+                          return (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={entry.color || memberColors[index % memberColors.length]} 
+                            />
+                          );
+                        })}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
