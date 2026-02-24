@@ -452,19 +452,19 @@ async def create_default_data(household_id: str, me_member_id: str, wife_member_
         RecurringRule(household_id=household_id, name="Rent", type="expense", amount=-1800,
                      frequency="monthly", next_date=f"{current_month}-01",
                      category_id=category_map.get("Housing_Rent"), account_id=checking_id,
-                     member_id=me_member_id, autopost=True),
+                     member_id=me_member_id, autopost=false),
         RecurringRule(household_id=household_id, name="Mobile Plan - Me", type="expense", amount=-65,
                      frequency="monthly", next_date=f"{current_month}-10",
                      category_id=category_map.get("Utilities_Mobile Plan"), account_id=checking_id,
-                     member_id=me_member_id, autopost=True),
+                     member_id=me_member_id, autopost=false),
         RecurringRule(household_id=household_id, name="Internet", type="expense", amount=-80,
                      frequency="monthly", next_date=f"{current_month}-12",
                      category_id=category_map.get("Utilities_Internet"), account_id=checking_id,
-                     member_id=wife_member_id, autopost=True),
+                     member_id=wife_member_id, autopost=false),
         RecurringRule(household_id=household_id, name="Paycheck - Me", type="income", amount=5000,
                      frequency="monthly", next_date=f"{current_month}-01",
                      category_id=category_map.get("Income_Salary"), account_id=checking_id,
-                     member_id=me_member_id, autopost=True),
+                     member_id=me_member_id, autopost=false),
     ]
     
     rec_docs = [r.model_dump() for r in recurring]
