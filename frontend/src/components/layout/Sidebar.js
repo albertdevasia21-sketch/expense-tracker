@@ -1,14 +1,14 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  ArrowLeftRight, 
-  TrendingUp, 
-  PieChart, 
-  Target as TargetIcon, 
-  RefreshCw, 
-  Flag, 
+import {
+  LayoutDashboard,
+  Wallet,
+  ArrowLeftRight,
+  TrendingUp,
+  PieChart,
+  Target as TargetIcon,
+  RefreshCw,
+  Flag,
   Settings,
   LogOut,
   Moon,
@@ -31,7 +31,7 @@ const navItems = [
   { path: "/recurring", label: "Recurring", icon: RefreshCw },
   { path: "/goals", label: "Goals", icon: Flag },
   { path: "/insights", label: "AI Insights", icon: Brain, highlight: true },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/settings", label: "Settings", icon: Settings }
 ];
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -46,18 +46,21 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay (BEHIND sidebar) */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={onClose}
           data-testid="sidebar-overlay"
         />
       )}
-      
-      <aside 
+
+      <aside
         className={cn(
           "app-sidebar",
+          // IMPORTANT: sidebar must be ABOVE overlay on mobile
+          "z-50",
+          // keep your existing open behavior
           isOpen && "open"
         )}
         data-testid="sidebar"
@@ -68,9 +71,11 @@ export const Sidebar = ({ isOpen, onClose }) => {
             <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-lg font-['Outfit']">Expense Tracker</span>
+            <span className="font-semibold text-lg font-['Outfit']">
+              Expense Tracker
+            </span>
           </div>
-          <button 
+          <button
             className="md:hidden p-1.5 hover:bg-secondary rounded-lg"
             onClick={onClose}
             data-testid="close-sidebar-btn"
@@ -89,15 +94,26 @@ export const Sidebar = ({ isOpen, onClose }) => {
                   onClick={onClose}
                   className={({ isActive }) =>
                     cn(
-                      "sidebar-item", 
+                      "sidebar-item",
                       isActive && "active",
-                      item.highlight && "bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20"
+                      item.highlight &&
+                        "bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20"
                     )
                   }
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                  data-testid={`nav-${item.label
+                    .toLowerCase()
+                    .replace(" ", "-")}`}
                 >
-                  <item.icon className={cn("w-5 h-5", item.highlight && "text-violet-500")} />
-                  <span className={item.highlight ? "text-violet-600 dark:text-violet-400 font-medium" : ""}>
+                  <item.icon
+                    className={cn("w-5 h-5", item.highlight && "text-violet-500")}
+                  />
+                  <span
+                    className={
+                      item.highlight
+                        ? "text-violet-600 dark:text-violet-400 font-medium"
+                        : ""
+                    }
+                  >
                     {item.label}
                   </span>
                   {item.highlight && (
@@ -143,7 +159,9 @@ export const Sidebar = ({ isOpen, onClose }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
               </div>
             </div>
             <Button
