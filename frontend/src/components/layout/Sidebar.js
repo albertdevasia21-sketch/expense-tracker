@@ -90,16 +90,21 @@ export const Sidebar = ({ isOpen, onClose }) => {
             {navItems.map((item) => (
               <li key={item.path}>
                 <NavLink
-                  to={item.path}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    cn(
-                      "sidebar-item",
-                      isActive && "active",
-                      item.highlight &&
-                        "bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20"
-                    )
-                  }
+  to={item.path}
+  onClick={() => {
+    navigate(item.path);
+    setTimeout(() => {
+      onClose?.();
+    }, 50);
+  }}
+  className={({ isActive }) =>
+    cn(
+      "sidebar-item",
+      isActive && "active",
+      item.highlight &&
+        "bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20"
+    )
+  }
                   data-testid={`nav-${item.label
                     .toLowerCase()
                     .replace(" ", "-")}`}
