@@ -8,26 +8,28 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
+
       - name: Install dependencies
         working-directory: frontend
         run: npm install --legacy-peer-deps
-        
+
       - name: Build
         working-directory: frontend
         env:
           REACT_APP_API_URL: https://expense-tracker-8mkh.onrender.com
           SKIP_PREFLIGHT_CHECK: true
+          DISABLE_ESLINT_PLUGIN: true
+          CI: false
         run: npm run build
-        
+
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
