@@ -19,14 +19,13 @@ jobs:
         working-directory: frontend
         run: npm install --legacy-peer-deps
 
-      - name: Build
+     - name: Build
         working-directory: frontend
         env:
           REACT_APP_API_URL: https://expense-tracker-8mkh.onrender.com
           SKIP_PREFLIGHT_CHECK: true
-          DISABLE_ESLINT_PLUGIN: true
           CI: false
-        run: npm run build
+        run: npm install ajv@^8.0.0 --legacy-peer-deps && npm install @radix-ui/react-switch @radix-ui/react-slider @radix-ui/react-scroll-area @radix-ui/react-radio-group @radix-ui/react-navigation-menu @radix-ui/react-menubar @radix-ui/react-hover-card @radix-ui/react-context-menu @radix-ui/react-collapsible @radix-ui/react-aspect-ratio cmdk embla-carousel-react input-otp next-themes react-resizable-panels vaul --legacy-peer-deps && npm run build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
