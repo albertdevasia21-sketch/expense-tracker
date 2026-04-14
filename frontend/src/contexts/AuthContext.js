@@ -3,7 +3,7 @@ import axios from "axios";
 
 const AuthContext = createContext(null);
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = "https://expense-tracker-8mkh.onrender.com";
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
