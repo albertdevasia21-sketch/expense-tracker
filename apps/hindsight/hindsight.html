@@ -1,0 +1,615 @@
+<title>Hindsight Journal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a logbook. Sticky top bar with view tabs, single reading column of entries, insights as a ledger of small instruments. */
+:root {
+  --bg: #edf0ee;
+  --surface: #f9fbfa;
+  --ink: #16201c;
+  --muted: #5a6761;
+  --line: #d2dad5;
+  --accent: #2f4fa3;
+  --accent-ink: #ffffff;
+  --soft: #dfe5f4;
+  --hit: #2b7a4c;
+  --part: #a86d12;
+  --miss: #b03a3a;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101513; --surface: #182019; --ink: #e3eae6; --muted: #93a19a; --line: #2a3530;
+    --accent: #8ea7ee; --accent-ink: #0d1430; --soft: #1d2640;
+    --hit: #5cc28a; --part: #e2aa4c; --miss: #e77b7b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101513; --surface: #182019; --ink: #e3eae6; --muted: #93a19a; --line: #2a3530;
+  --accent: #8ea7ee; --accent-ink: #0d1430; --soft: #1d2640;
+  --hit: #5cc28a; --part: #e2aa4c; --miss: #e77b7b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top .wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 12px; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 { font: 700 24px/1 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+.brand span { color: var(--muted); font-size: 13px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; order: 3; width: 100%; }
+.tab { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; color: var(--muted); cursor: pointer; font-weight: 500; display: inline-flex; gap: 6px; align-items: center; }
+.tab:hover { color: var(--ink); background: var(--surface); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.count { font: 500 12px var(--font-mono); opacity: .75; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--miss); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); }
+
+main.wrap { padding-block: 24px 64px; display: grid; gap: 20px; }
+.notice { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--radius); padding: 10px 14px; }
+.lede { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.lede h2 { font: 700 30px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.lede p { margin: 4px 0 0; color: var(--muted); max-width: 60ch; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--surface); }
+
+.list { display: grid; gap: 10px; }
+.entry { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; }
+.entry:hover { border-color: var(--muted); }
+.entry .meta { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+.entry h3 { margin: 0; font: 600 17px/1.3 var(--font-body); min-width: 0; text-wrap: balance; }
+.entry .choice { grid-column: 1; margin: 0; color: var(--muted); font-size: 14px; min-width: 0; }
+.entry .side { grid-column: 2; grid-row: 2 / span 2; display: grid; justify-items: end; align-content: start; gap: 4px; }
+.conf { font: 500 22px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.conf small { font-size: 12px; color: var(--muted); }
+.tag { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; font-size: 11px; color: var(--ink); }
+.pill { font: 500 12px var(--font-mono); padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.due { color: var(--miss); }
+.pill.soon { color: var(--part); }
+.pill.later { color: var(--muted); }
+.pill.yes { color: var(--hit); }
+.pill.partly { color: var(--part); }
+.pill.no { color: var(--miss); }
+.pill.ex { color: var(--accent); border-style: dashed; }
+.stakes { display: inline-flex; gap: 3px; align-items: center; }
+.stakes i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); display: block; }
+.stakes i.on { background: var(--ink); }
+
+.empty { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px 24px; display: grid; gap: 10px; justify-items: start; }
+.empty h3 { margin: 0; font: 700 20px var(--font-display); }
+.empty p { margin: 0; color: var(--muted); max-width: 58ch; }
+
+/* insights */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.panel h3 { margin: 0; font: 700 17px var(--font-display); }
+.panel .sub { margin: 0; color: var(--muted); font-size: 13px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.stat { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 2px; }
+.stat:last-child { border-right: 0; }
+.stat b { font: 500 26px/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.stat em { font-style: normal; font-size: 12px; color: var(--muted); }
+svg text { fill: var(--muted); font: 11px var(--font-mono); }
+.matrix { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px; font-size: 13px; }
+.matrix .h { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; align-self: end; }
+.matrix .rh { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; align-self: center; writing-mode: horizontal-tb; padding-right: 4px; }
+.cell { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 2px; }
+.cell b { font: 500 24px var(--font-mono); }
+.cell.good b { color: var(--hit); }
+.cell.bad b { color: var(--miss); }
+.cell.warn b { color: var(--part); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+th.num { text-align: right; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.lessons { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.lessons li { border-left: 2px solid var(--line); padding-left: 12px; }
+.lessons q { quotes: none; font-size: 15px; }
+.lessons small { display: block; color: var(--muted); font-size: 12px; }
+
+/* dialogs */
+dialog { border: 1px solid var(--line); border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+dialog::backdrop { background: rgb(10 14 12 / .45); }
+.dlg { display: grid; gap: 16px; padding: 20px; }
+.dlg header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.dlg h2 { margin: 0; font: 700 22px/1.2 var(--font-display); text-wrap: balance; }
+.field { display: grid; gap: 6px; }
+.field > label, .field > .lbl { font-weight: 600; font-size: 13px; }
+.field .hint { color: var(--muted); font-size: 12px; font-weight: 400; }
+input[type="text"], input[type="date"], textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+textarea { min-height: 70px; resize: vertical; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+.seg input:checked + label { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.slider { display: flex; gap: 12px; align-items: center; }
+.slider input { flex: 1; accent-color: var(--accent); }
+.slider output { font: 500 20px var(--font-mono); min-width: 3.5ch; text-align: right; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.actions .left { margin-right: auto; display: flex; gap: 8px; align-items: center; }
+.detail { display: grid; gap: 12px; }
+.detail dl { margin: 0; display: grid; gap: 10px; }
+.detail dt { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.detail dd { margin: 2px 0 0; white-space: pre-wrap; }
+.review-box { border-top: 1px solid var(--line); padding-top: 12px; }
+.confirm { font-size: 13px; color: var(--miss); }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 20; }
+
+@media (min-width: 720px) {
+  .tabs { order: 0; width: auto; }
+}
+@media (max-width: 480px) {
+  .lede h2 { font-size: 24px; }
+  .brand span { display: none; }
+  .entry { grid-template-columns: 1fr; }
+  .entry .side { grid-column: 1; grid-row: auto; justify-items: start; grid-auto-flow: column; align-items: center; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .entry, .btn, .tab { transition: border-color .15s, background-color .15s, color .15s; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>Hindsight</h1><span>a decision journal</span></div>
+    <nav class="tabs" role="tablist" aria-label="Views" id="tabs"></nav>
+    <button class="btn primary" id="newBtn" type="button">Log a decision</button>
+  </div>
+</header>
+
+<main class="wrap" id="view" aria-live="polite">
+  <div class="empty"><h3>Opening your journal…</h3><p>Your decisions will appear here.</p></div>
+</main>
+
+<dialog id="editor" aria-labelledby="edTitle">
+  <form class="dlg" id="edForm" method="dialog">
+    <header><h2 id="edTitle">Log a decision</h2><button class="btn ghost" type="button" data-close>Close</button></header>
+    <p class="sub" style="margin:0;color:var(--muted);font-size:14px">Write it down before you know how it turns out. That is the whole trick.</p>
+    <div class="field"><label for="f-title">What are you deciding?</label><input id="f-title" type="text" required maxlength="140" placeholder="Move to the flat closer to work"></div>
+    <div class="field"><label for="f-context">Situation <span class="hint">What you know right now, and what you don't.</span></label><textarea id="f-context" maxlength="2000"></textarea></div>
+    <div class="field"><label for="f-options">Options you considered</label><textarea id="f-options" maxlength="1000" placeholder="Stay; move now; wait until spring"></textarea></div>
+    <div class="field"><label for="f-choice">What you chose</label><input id="f-choice" type="text" required maxlength="200"></div>
+    <div class="field"><label for="f-expect">What you expect to happen <span class="hint">Be specific enough that you can check it later.</span></label><textarea id="f-expect" required maxlength="1000"></textarea></div>
+    <div class="field">
+      <label for="f-conf">How sure are you that expectation comes true?</label>
+      <div class="slider"><input id="f-conf" type="range" min="50" max="99" step="1" value="70"><output id="f-conf-out" for="f-conf">70%</output></div>
+      <span class="hint" style="font-size:12px;color:var(--muted)">50% is a coin flip. 99% means you'd be shocked to be wrong.</span>
+    </div>
+    <div class="row">
+      <div class="field"><label for="f-area">Area of life</label><select id="f-area"></select></div>
+      <div class="field"><label for="f-decided">Decided on</label><input id="f-decided" type="date" required></div>
+      <div class="field"><label for="f-review">Review on</label><input id="f-review" type="date" required></div>
+    </div>
+    <div class="field"><span class="lbl" id="lbl-state">Your state of mind right now</span><div class="seg" id="f-state" role="radiogroup" aria-labelledby="lbl-state"></div></div>
+    <div class="field"><span class="lbl" id="lbl-stakes">Stakes</span><div class="seg" id="f-stakes" role="radiogroup" aria-labelledby="lbl-stakes"></div></div>
+    <div class="actions"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit" id="edSave">Save to journal</button></div>
+  </form>
+</dialog>
+
+<dialog id="reviewer" aria-labelledby="rvTitle">
+  <form class="dlg" id="rvForm" method="dialog">
+    <header><h2 id="rvTitle">Review</h2><button class="btn ghost" type="button" data-close>Close</button></header>
+    <div class="notice" id="rvRecall"></div>
+    <div class="field"><label for="r-outcome">What actually happened?</label><textarea id="r-outcome" required maxlength="2000"></textarea></div>
+    <div class="field"><span class="lbl" id="lbl-true">Did your expectation come true?</span><div class="seg" id="r-true" role="radiogroup" aria-labelledby="lbl-true"></div></div>
+    <div class="field"><span class="lbl" id="lbl-good">Was the outcome good for you?</span><div class="seg" id="r-good" role="radiogroup" aria-labelledby="lbl-good"></div></div>
+    <div class="field"><span class="lbl" id="lbl-q">Knowing only what you knew then, was it a sound decision? <span class="hint">Judge the process, not the result.</span></span><div class="seg" id="r-quality" role="radiogroup" aria-labelledby="lbl-q"></div></div>
+    <div class="field"><label for="r-lesson">One lesson for next time</label><input id="r-lesson" type="text" maxlength="240"></div>
+    <div class="actions"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save review</button></div>
+  </form>
+</dialog>
+
+<dialog id="viewer" aria-labelledby="vwTitle"><div class="dlg" id="vwBody"></div></dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  const AREAS = ["Money", "Career", "Health", "Relationships", "Home", "Learning", "Other"];
+  const STATES = ["Calm", "Focused", "Rushed", "Tired", "Anxious", "Elated"];
+  const STAKES = [["1", "Low"], ["2", "Medium"], ["3", "High"]];
+  const TRUE_OPTS = [["yes", "Yes"], ["partly", "Partly"], ["no", "No"]];
+  const GOOD_OPTS = [["good", "Good"], ["bad", "Bad"]];
+  const Q_OPTS = [["sound", "Sound"], ["flawed", "Flawed"]];
+  const SCORE = { yes: 1, partly: 0.5, no: 0 };
+  const LS_KEY = "hindsight.v1";
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const today = () => iso(new Date());
+  const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return iso(d); };
+  const daysBetween = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000);
+  const fmtDate = (s) => s ? new Date(s + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+  const pct = (x) => Math.round(x * 100) + "%";
+
+  // ---------- local examples (used only when the shared store is unavailable) ----------
+  function localExamples() {
+    const t = today(), d = (n) => addDays(t, n);
+    const mk = (o) => ({ example: true, createdAt: Date.now(), ...o });
+    return [
+      mk({ id: "ex-mobile", title: "Switch to a cheaper mobile plan", area: "Money", context: "Current plan renews next week. Two cheaper carriers advertise the same coverage.", options: "Stay; switch to carrier A; switch to carrier B", choice: "Switch to carrier A", expect: "About 30% lower monthly bill with no coverage gaps at home or on the commute.", confidence: 85, state: "Calm", stakes: 1, decidedOn: d(-37), reviewOn: d(-7), review: null }),
+      mk({ id: "ex-course", title: "Take the evening statistics course", area: "Learning", context: "Twelve weeks, two evenings a week. Work is busy until December.", options: "Enrol now; wait for the spring cohort", choice: "Enrol now", expect: "I finish all modules and use regression at least once outside the course.", confidence: 55, state: "Focused", stakes: 2, decidedOn: d(-18), reviewOn: d(74), review: null }),
+      mk({ id: "ex-flights", title: "Book flights before leave is confirmed", area: "Other", context: "Fares jumping daily. Manager hadn't replied yet.", options: "Book now; wait for approval", choice: "Book now", expect: "Leave gets approved and the early fare saves money.", confidence: 70, state: "Rushed", stakes: 1, decidedOn: d(-106), reviewOn: d(-76), review: { on: d(-75), cameTrue: "yes", outcome: "good", quality: "flawed", text: "Leave was approved two days later. Saved a fair amount.", lesson: "A rushed yes that worked out is still a rushed yes." } }),
+      mk({ id: "ex-running", title: "Start running three mornings a week", area: "Health", context: "Sleep and energy have been poor since spring.", options: "Gym membership; running; do nothing", choice: "Running, Mon/Wed/Fri before work", expect: "Still running at least twice a week after eight weeks.", confidence: 60, state: "Focused", stakes: 2, decidedOn: d(-140), reviewOn: d(-84), review: { on: d(-82), cameTrue: "yes", outcome: "good", quality: "sound", text: "Missed only four sessions in eight weeks.", lesson: "Laying out kit the night before mattered more than motivation." } }),
+      mk({ id: "ex-contract", title: "Turn down the weekend side contract", area: "Career", context: "Good money, six weekends in a row, already tired.", options: "Accept; accept half; decline", choice: "Decline", expect: "I feel rested by the end of the quarter and don't regret the money.", confidence: 65, state: "Tired", stakes: 2, decidedOn: d(-170), reviewOn: d(-80), review: { on: d(-78), cameTrue: "partly", outcome: "good", quality: "sound", text: "Rested, yes. Some regret when an unexpected bill arrived.", lesson: "Rest had value I didn't price in. Keep a small buffer so money doesn't drive these calls." } }),
+      mk({ id: "ex-loan", title: "Lend my cousin money for a rental deposit", area: "Relationships", context: "They had a signed lease and a start date for a new job.", options: "Lend all; lend half; decline", choice: "Lend all, repaid monthly over six months", expect: "Fully repaid within six months with no strain between us.", confidence: 75, state: "Anxious", stakes: 3, decidedOn: d(-240), reviewOn: d(-60), review: { on: d(-58), cameTrue: "no", outcome: "bad", quality: "sound", text: "Repayments stopped after two months. We are both avoiding the subject.", lesson: "Agreeing a schedule was right. Also agree up front what happens if it slips." } }),
+      mk({ id: "ex-desk", title: "Buy the standing desk in the launch sale", area: "Home", context: "Saw it in a video, sale ended at midnight.", options: "Buy now; wait for reviews", choice: "Buy now", expect: "I stand for at least half of my working day within a month.", confidence: 90, state: "Elated", stakes: 1, decidedOn: d(-210), reviewOn: d(-180), review: { on: d(-178), cameTrue: "no", outcome: "bad", quality: "flawed", text: "Stood for two weeks. It is now an expensive sitting desk.", lesson: "When I'm excited about a purchase, wait 72 hours." } }),
+    ];
+  }
+
+  // ---------- storage: shared store when available, browser storage otherwise ----------
+  let decisions = [];
+  let mode = "loading"; // "db" | "local" | "loading"
+  let col = null;
+  let readOnly = false;
+
+  function loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return localExamples();
+  }
+  function saveLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(decisions)); } catch (e) {}
+  }
+  function newId() { return "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  async function putDecision(d) {
+    const { id, ...body } = d;
+    if (mode === "db") {
+      await col.doc(id).set(JSON.parse(JSON.stringify(body)));
+    } else {
+      const i = decisions.findIndex((x) => x.id === id);
+      if (i >= 0) decisions[i] = d; else decisions.push(d);
+      saveLocal(); render();
+    }
+  }
+  async function removeDecision(id) {
+    if (mode === "db") await col.doc(id).delete();
+    else { decisions = decisions.filter((x) => x.id !== id); saveLocal(); render(); }
+  }
+  function writeError(e) {
+    if (e && e.code === "invalid_argument") { readOnly = true; toast("This journal is read-only for you."); render(); }
+    else if (e && e.code === "quota_exceeded") toast("The journal is full. Delete a few old entries to make room.");
+    else toast("Couldn't save. Check your connection and try again.");
+  }
+
+  async function init() {
+    let db = null, user = null;
+    try {
+      if (window.claude && typeof window.claude.use === "function") {
+        [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      }
+    } catch (e) { db = null; }
+    if (user) {
+      try { if ((await user.isOwner()) === false) readOnly = true; } catch (e) {}
+    }
+    if (!db) { mode = "local"; decisions = loadLocal(); render(); return; }
+    mode = "db";
+    col = db.collection("decisions");
+    col.onSnapshot((snap) => {
+      decisions = snap.docs.map((s) => ({ id: s.id, ...s.data() }));
+      render();
+    }, () => { mode = "local"; decisions = loadLocal(); render(); toast("Lost the connection to your journal. Showing this browser's copy."); });
+  }
+
+  // ---------- view state ----------
+  const ui = { tab: null, area: "All" };
+  try { const s = JSON.parse(sessionStorage.getItem("hindsight.ui") || "null"); if (s) Object.assign(ui, s); } catch (e) {}
+  function keepUi() { try { sessionStorage.setItem("hindsight.ui", JSON.stringify(ui)); } catch (e) {} }
+
+  const isDue = (d) => !d.review && d.reviewOn && d.reviewOn <= today();
+  const open = () => decisions.filter((d) => !d.review);
+  const due = () => open().filter(isDue);
+  const reviewed = () => decisions.filter((d) => d.review);
+
+  function renderTabs() {
+    const tabs = [["due", "Due for review", due().length], ["open", "Open", open().length], ["reviewed", "Reviewed", reviewed().length], ["insights", "Insights", null]];
+    if (!ui.tab) ui.tab = due().length ? "due" : "open";
+    $("#tabs").innerHTML = tabs.map(([k, label, n]) =>
+      `<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${ui.tab === k}">${label}${n !== null ? ` <span class="count">${n}</span>` : ""}</button>`).join("");
+    $("#newBtn").hidden = readOnly;
+  }
+
+  function stakesDots(n) { return `<span class="stakes" title="${["", "Low", "Medium", "High"][n] || ""} stakes">${[1, 2, 3].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`; }
+  function reviewPill(d) {
+    if (d.review) return `<span class="pill ${d.review.cameTrue}">${{ yes: "Came true", partly: "Partly true", no: "Didn't happen" }[d.review.cameTrue]}</span>`;
+    const n = daysBetween(today(), d.reviewOn);
+    if (n < 0) return `<span class="pill due">Review overdue ${-n}d</span>`;
+    if (n === 0) return `<span class="pill due">Review today</span>`;
+    if (n <= 14) return `<span class="pill soon">Review in ${n}d</span>`;
+    return `<span class="pill later">Review ${fmtDate(d.reviewOn)}</span>`;
+  }
+  function entryHtml(d) {
+    return `<button class="entry" type="button" data-open="${esc(d.id)}">
+      <div class="meta"><span class="tag">${esc(d.area)}</span><span>${fmtDate(d.decidedOn)}</span>${stakesDots(d.stakes)}<span>${esc(d.state)}</span>${d.example ? `<span class="pill ex">Example</span>` : ""}</div>
+      <h3>${esc(d.title)}</h3>
+      <p class="choice">Chose: ${esc(d.choice)}</p>
+      <div class="side"><span class="conf">${d.confidence}<small>%</small></span>${reviewPill(d)}</div>
+    </button>`;
+  }
+  function areaFilter(list) {
+    const areas = ["All", ...AREAS.filter((a) => list.some((d) => d.area === a))];
+    if (!areas.includes(ui.area)) ui.area = "All";
+    if (areas.length <= 2) return "";
+    return `<div class="filters" aria-label="Filter by area">${areas.map((a) => `<button class="chip" type="button" data-area="${a}" aria-pressed="${ui.area === a}">${a}</button>`).join("")}</div>`;
+  }
+  function examplesNotice() {
+    if (!decisions.some((d) => d.example) || readOnly) return "";
+    return `<div class="notice">Entries marked <b>Example</b> show how the journal works. <button class="btn ghost" type="button" data-clear-examples style="padding:2px 6px">Remove examples</button></div>`;
+  }
+  function modeNotice() {
+    if (mode === "local") return `<div class="notice">Saved in this browser only. Use Export now and then to keep a backup.</div>`;
+    if (readOnly) return `<div class="notice">This journal belongs to someone else. You can read it but not change it.</div>`;
+    return "";
+  }
+
+  function renderList(kind) {
+    const all = kind === "due" ? due() : kind === "open" ? open() : reviewed();
+    const sorted = [...all].sort(kind === "reviewed" ? (a, b) => (b.review.on || "").localeCompare(a.review.on || "") : (a, b) => a.reviewOn.localeCompare(b.reviewOn));
+    const shown = ui.area === "All" ? sorted : sorted.filter((d) => d.area === ui.area);
+    const head = {
+      due: ["Due for review", "These have reached their review date. Recall what you expected, then write down what really happened."],
+      open: ["Open decisions", "Made and written down, waiting for the world to answer."],
+      reviewed: ["Reviewed", "Closed entries, newest review first."],
+    }[kind];
+    let body;
+    if (!decisions.length) {
+      body = `<div class="empty"><h3>Your journal is empty</h3><p>Pick a decision you're making this week, even a small one. Write what you expect and how sure you are. In a few weeks you'll find out how good your forecasts are.</p>${readOnly ? "" : `<button class="btn primary" type="button" data-new>Log your first decision</button>`}</div>`;
+    } else if (!shown.length) {
+      body = kind === "due"
+        ? `<div class="empty"><h3>Nothing due</h3><p>No decisions have reached their review date. The next one is ${open().length ? fmtDate([...open()].sort((a, b) => a.reviewOn.localeCompare(b.reviewOn))[0].reviewOn) : "not scheduled yet"}.</p></div>`
+        : `<div class="empty"><h3>Nothing here yet</h3><p>${kind === "reviewed" ? "Reviewed decisions will collect here." : "Log a decision to start."}</p></div>`;
+    } else body = `<div class="list">${shown.map(entryHtml).join("")}</div>`;
+    return `${modeNotice()}${examplesNotice()}<div class="lede"><div><h2>${head[0]}</h2><p>${head[1]}</p></div>${areaFilter(all)}</div>${body}`;
+  }
+
+  // ---------- insights ----------
+  function calibrationSvg(rev) {
+    const buckets = [[50, 59], [60, 69], [70, 79], [80, 89], [90, 99]].map(([lo, hi]) => {
+      const xs = rev.filter((d) => d.confidence >= lo && d.confidence <= hi);
+      return { lo, hi, n: xs.length, conf: xs.length ? xs.reduce((s, d) => s + d.confidence, 0) / xs.length / 100 : (lo + hi) / 200, hit: xs.length ? xs.reduce((s, d) => s + SCORE[d.review.cameTrue], 0) / xs.length : null };
+    });
+    const W = 340, H = 240, L = 40, R = 12, T = 12, B = 34;
+    const x = (p) => L + ((p - 0.5) / 0.5) * (W - L - R);
+    const y = (p) => T + (1 - p) * (H - T - B);
+    const grid = [0, .25, .5, .75, 1].map((p) => `<line x1="${L}" x2="${W - R}" y1="${y(p)}" y2="${y(p)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y(p) + 4}" text-anchor="end">${p * 100}%</text>`).join("");
+    const xt = [.5, .6, .7, .8, .9, 1].map((p) => `<text x="${x(p)}" y="${H - B + 16}" text-anchor="middle">${Math.round(p * 100)}%</text>`).join("");
+    const pts = buckets.filter((b) => b.n);
+    const path = pts.map((b, i) => `${i ? "L" : "M"}${x(b.conf).toFixed(1)},${y(b.hit).toFixed(1)}`).join(" ");
+    const dots = pts.map((b) => {
+      const c = b.hit >= b.conf - 0.1 ? (b.hit > b.conf + 0.1 ? "var(--part)" : "var(--hit)") : "var(--miss)";
+      return `<circle cx="${x(b.conf)}" cy="${y(b.hit)}" r="${4 + Math.min(b.n, 8)}" fill="${c}" fill-opacity=".85" stroke="var(--surface)" stroke-width="2"><title>${b.lo}–${b.hi}%: ${b.n} decision${b.n > 1 ? "s" : ""}, ${pct(b.hit)} came true</title></circle>`;
+    }).join("");
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Calibration chart: stated confidence against how often expectations came true">
+      ${grid}${xt}
+      <line x1="${x(.5)}" y1="${y(.5)}" x2="${x(1)}" y2="${y(1)}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>
+      <text x="${x(.8)}" y="${y(.93)}" text-anchor="middle">perfect</text>
+      ${path ? `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2"/>` : ""}
+      ${dots}
+      <text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle">how sure you said you were</text>
+    </svg>`;
+  }
+  function groupTable(rev, key, label, order) {
+    const rows = order.map((k) => {
+      const xs = rev.filter((d) => String(d[key]) === String(k[0]));
+      if (!xs.length) return null;
+      const hit = xs.reduce((s, d) => s + SCORE[d.review.cameTrue], 0) / xs.length;
+      const sound = xs.filter((d) => d.review.quality === "sound").length / xs.length;
+      const conf = xs.reduce((s, d) => s + d.confidence, 0) / xs.length / 100;
+      return `<tr><td>${esc(k[1])}</td><td class="num">${xs.length}</td><td class="num">${pct(conf)}</td><td class="num">${pct(hit)}</td><td><div class="bar" title="${pct(sound)} judged sound"><i style="width:${sound * 100}%"></i></div></td></tr>`;
+    }).filter(Boolean).join("");
+    return `<div class="table-wrap"><table><thead><tr><th>${label}</th><th class="num">n</th><th class="num">Said</th><th class="num">Came true</th><th>Sound process</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  function renderInsights() {
+    const rev = reviewed();
+    if (!rev.length) {
+      return `${modeNotice()}<div class="lede"><div><h2>Insights</h2><p>Review a few decisions and this page will show how well your confidence matches reality.</p></div></div><div class="empty"><h3>No reviews yet</h3><p>Insights start once you've closed your first decision. Calibration gets meaningful at around ten reviews.</p></div>`;
+    }
+    const brier = rev.reduce((s, d) => s + Math.pow(d.confidence / 100 - SCORE[d.review.cameTrue], 2), 0) / rev.length;
+    const hit = rev.reduce((s, d) => s + SCORE[d.review.cameTrue], 0) / rev.length;
+    const conf = rev.reduce((s, d) => s + d.confidence, 0) / rev.length / 100;
+    const gap = conf - hit;
+    const verdict = Math.abs(gap) < 0.06 ? "well calibrated" : gap > 0 ? "overconfident" : "underconfident";
+    const m = (q, o) => rev.filter((d) => d.review.quality === q && d.review.outcome === o).length;
+    const lessons = rev.filter((d) => d.review.lesson).sort((a, b) => (b.review.on || "").localeCompare(a.review.on || "")).slice(0, 6);
+    return `${modeNotice()}
+    <div class="lede"><div><h2>Insights</h2><p>Across ${rev.length} reviewed decision${rev.length > 1 ? "s" : ""} you were <b>${verdict}</b>: you said ${pct(conf)} on average and ${pct(hit)} came true.${rev.length < 10 ? " With fewer than ten reviews, read this as a first impression." : ""}</p></div></div>
+    <div class="stats">
+      <div class="stat"><span>Logged</span><b>${decisions.length}</b><em>${open().length} still open</em></div>
+      <div class="stat"><span>Came true</span><b>${pct(hit)}</b><em>partly counts as half</em></div>
+      <div class="stat"><span>Avg confidence</span><b>${pct(conf)}</b><em>${gap >= 0 ? "+" : ""}${Math.round(gap * 100)} pts vs reality</em></div>
+      <div class="stat"><span>Brier score</span><b>${brier.toFixed(2)}</b><em>0 is perfect, 0.25 is guessing</em></div>
+    </div>
+    <div class="grid2">
+      <section class="panel"><h3>Calibration</h3><p class="sub">Each dot is a confidence band. Dots below the dashed line mean you were more sure than you should have been.</p>${calibrationSvg(rev)}</section>
+      <section class="panel"><h3>Skill or luck?</h3><p class="sub">Separates how you decided from how it turned out, so a lucky break isn't mistaken for good judgment.</p>
+        <div class="matrix">
+          <span></span><span class="h">Good outcome</span><span class="h">Bad outcome</span>
+          <span class="rh">Sound</span><div class="cell good"><b>${m("sound", "good")}</b>Earned it</div><div class="cell warn"><b>${m("sound", "bad")}</b>Bad break</div>
+          <span class="rh">Flawed</span><div class="cell warn"><b>${m("flawed", "good")}</b>Got lucky</div><div class="cell bad"><b>${m("flawed", "bad")}</b>Paid for a lesson</div>
+        </div>
+      </section>
+      <section class="panel"><h3>By state of mind</h3><p class="sub">How you felt when deciding, against how it went.</p>${groupTable(rev, "state", "State", STATES.map((s) => [s, s]))}</section>
+      <section class="panel"><h3>By area of life</h3><p class="sub">Where your forecasts hold up and where they don't.</p>${groupTable(rev, "area", "Area", AREAS.map((s) => [s, s]))}</section>
+    </div>
+    ${lessons.length ? `<section class="panel"><h3>Lessons you wrote down</h3><ul class="lessons">${lessons.map((d) => `<li><q>${esc(d.review.lesson)}</q><small>${esc(d.title)} · ${fmtDate(d.review.on)}</small></li>`).join("")}</ul></section>` : ""}
+    <div class="actions" style="justify-content:flex-start"><button class="btn" type="button" data-export>Export journal (JSON)</button></div>`;
+  }
+
+  function render() {
+    renderTabs();
+    const v = $("#view");
+    v.innerHTML = ui.tab === "insights" ? renderInsights() : renderList(ui.tab);
+    keepUi();
+    const openId = $("#viewer").open && $("#viewer").dataset.id;
+    if (openId) { const d = decisions.find((x) => x.id === openId); if (d) showDetail(d); else $("#viewer").close(); }
+  }
+
+  // ---------- forms ----------
+  function seg(el, name, opts, value) {
+    el.innerHTML = opts.map(([v, l]) => `<input type="radio" id="${name}-${v}" name="${name}" value="${v}" ${String(v) === String(value) ? "checked" : ""}><label for="${name}-${v}">${l}</label>`).join("");
+  }
+  function segVal(name) { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : null; }
+  $("#f-area").innerHTML = AREAS.map((a) => `<option>${a}</option>`).join("");
+  $("#f-conf").addEventListener("input", (e) => { $("#f-conf-out").textContent = e.target.value + "%"; });
+  $("#f-decided").addEventListener("change", (e) => {
+    if (!editing) $("#f-review").value = addDays(e.target.value || today(), 30);
+  });
+
+  let editing = null;
+  function openEditor(d) {
+    editing = d || null;
+    $("#edTitle").textContent = d ? "Edit decision" : "Log a decision";
+    $("#f-title").value = d?.title || "";
+    $("#f-context").value = d?.context || "";
+    $("#f-options").value = d?.options || "";
+    $("#f-choice").value = d?.choice || "";
+    $("#f-expect").value = d?.expect || "";
+    $("#f-conf").value = d?.confidence || 70; $("#f-conf-out").textContent = (d?.confidence || 70) + "%";
+    $("#f-area").value = d?.area || "Other";
+    $("#f-decided").value = d?.decidedOn || today();
+    $("#f-review").value = d?.reviewOn || addDays(today(), 30);
+    seg($("#f-state"), "state", STATES.map((s) => [s, s]), d?.state || "Calm");
+    seg($("#f-stakes"), "stakes", STAKES, d?.stakes || 2);
+    $("#edSave").textContent = d ? "Save changes" : "Save to journal";
+    $("#editor").showModal();
+    $("#f-title").focus();
+  }
+  $("#edForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if ($("#f-review").value < $("#f-decided").value) { toast("Review date has to be on or after the decision date."); return; }
+    const d = {
+      ...(editing || { id: newId(), createdAt: Date.now(), review: null }),
+      title: $("#f-title").value.trim(), context: $("#f-context").value.trim(), options: $("#f-options").value.trim(),
+      choice: $("#f-choice").value.trim(), expect: $("#f-expect").value.trim(), confidence: +$("#f-conf").value,
+      area: $("#f-area").value, decidedOn: $("#f-decided").value, reviewOn: $("#f-review").value,
+      state: segVal("state") || "Calm", stakes: +(segVal("stakes") || 2),
+    };
+    delete d.example;
+    $("#editor").close();
+    try { await putDecision(d); toast(editing ? "Saved" : `Logged. Review on ${fmtDate(d.reviewOn)}.`); if (!editing && ui.tab !== "open" && !isDue(d)) { ui.tab = "open"; render(); } }
+    catch (err) { writeError(err); }
+  });
+
+  let reviewing = null;
+  function openReviewer(d) {
+    reviewing = d;
+    $("#rvTitle").textContent = d.title;
+    $("#rvRecall").innerHTML = `On ${fmtDate(d.decidedOn)} you chose <b>${esc(d.choice)}</b> and were <b>${d.confidence}%</b> sure that: ${esc(d.expect)}`;
+    $("#r-outcome").value = d.review?.text || "";
+    $("#r-lesson").value = d.review?.lesson || "";
+    seg($("#r-true"), "rtrue", TRUE_OPTS, d.review?.cameTrue);
+    seg($("#r-good"), "rgood", GOOD_OPTS, d.review?.outcome);
+    seg($("#r-quality"), "rq", Q_OPTS, d.review?.quality);
+    $("#viewer").close();
+    $("#reviewer").showModal();
+    $("#r-outcome").focus();
+  }
+  $("#rvForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cameTrue = segVal("rtrue"), outcome = segVal("rgood"), quality = segVal("rq");
+    if (!cameTrue || !outcome || !quality) { toast("Answer the three quick questions before saving."); return; }
+    const d = { ...reviewing, review: { on: reviewing.review?.on || today(), cameTrue, outcome, quality, text: $("#r-outcome").value.trim(), lesson: $("#r-lesson").value.trim() } };
+    $("#reviewer").close();
+    try { await putDecision(d); toast("Review saved"); } catch (err) { writeError(err); }
+  });
+
+  function showDetail(d) {
+    const v = $("#viewer"); v.dataset.id = d.id;
+    const r = d.review;
+    const label = (opts, k) => (opts.find((o) => o[0] === k) || [, k])[1];
+    $("#vwBody").innerHTML = `
+      <header><div><div class="meta" style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center"><span class="tag">${esc(d.area)}</span><span>${fmtDate(d.decidedOn)}</span>${stakesDots(d.stakes)}<span>${esc(d.state)}</span>${d.example ? `<span class="pill ex">Example</span>` : ""}</div><h2 id="vwTitle">${esc(d.title)}</h2></div><button class="btn ghost" type="button" data-close>Close</button></header>
+      <div class="detail"><dl>
+        ${d.context ? `<div><dt>Situation</dt><dd>${esc(d.context)}</dd></div>` : ""}
+        ${d.options ? `<div><dt>Options considered</dt><dd>${esc(d.options)}</dd></div>` : ""}
+        <div><dt>Chose</dt><dd>${esc(d.choice)}</dd></div>
+        <div><dt>Expected · ${d.confidence}% sure</dt><dd>${esc(d.expect)}</dd></div>
+      </dl>
+      ${r ? `<div class="review-box"><dl>
+        <div><dt>Reviewed ${fmtDate(r.on)}</dt><dd>${esc(r.text) || "<i>No notes</i>"}</dd></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill ${r.cameTrue}">Came true: ${label(TRUE_OPTS, r.cameTrue)}</span><span class="pill ${r.outcome === "good" ? "yes" : "no"}">Outcome: ${label(GOOD_OPTS, r.outcome)}</span><span class="pill ${r.quality === "sound" ? "yes" : "partly"}">Process: ${label(Q_OPTS, r.quality)}</span></div>
+        ${r.lesson ? `<div><dt>Lesson</dt><dd>${esc(r.lesson)}</dd></div>` : ""}
+      </dl></div>` : `<div class="review-box">${reviewPill(d)}</div>`}
+      </div>
+      ${readOnly ? "" : `<div class="actions"><div class="left" id="delZone"><button class="btn danger ghost" type="button" data-del="${esc(d.id)}">Delete</button></div><button class="btn" type="button" data-edit="${esc(d.id)}">Edit</button><button class="btn primary" type="button" data-review="${esc(d.id)}">${r ? "Edit review" : isDue(d) ? "Review now" : "Review early"}</button></div>`}`;
+    if (!v.open) v.showModal();
+  }
+
+  // ---------- events ----------
+  document.addEventListener("click", async (e) => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    const find = (id) => decisions.find((d) => d.id === id);
+    if (t.dataset.tab) { ui.tab = t.dataset.tab; render(); return; }
+    if (t.dataset.area) { ui.area = t.dataset.area; render(); return; }
+    if (t.id === "newBtn" || t.hasAttribute("data-new")) { openEditor(); return; }
+    if (t.hasAttribute("data-close")) { t.closest("dialog").close(); return; }
+    if (t.dataset.open) { const d = find(t.dataset.open); if (d) showDetail(d); return; }
+    if (t.dataset.edit) { const d = find(t.dataset.edit); $("#viewer").close(); if (d) openEditor(d); return; }
+    if (t.dataset.review) { const d = find(t.dataset.review); if (d) openReviewer(d); return; }
+    if (t.dataset.del) {
+      $("#delZone").innerHTML = `<span class="confirm">Delete for good?</span><button class="btn danger" type="button" data-del-yes="${esc(t.dataset.del)}">Delete</button><button class="btn ghost" type="button" data-del-no>Keep</button>`;
+      return;
+    }
+    if (t.hasAttribute("data-del-no")) { const d = find($("#viewer").dataset.id); if (d) showDetail(d); return; }
+    if (t.dataset.delYes) { $("#viewer").close(); try { await removeDecision(t.dataset.delYes); toast("Deleted"); } catch (err) { writeError(err); } return; }
+    if (t.hasAttribute("data-clear-examples")) {
+      const ex = decisions.filter((d) => d.example);
+      try { for (const d of ex) await removeDecision(d.id); toast(`Removed ${ex.length} examples`); } catch (err) { writeError(err); }
+      if (mode === "local" && !decisions.length) saveLocal();
+      return;
+    }
+    if (t.hasAttribute("data-export")) { exportJson(); return; }
+  });
+
+  async function exportJson() {
+    const data = JSON.stringify({ exportedOn: today(), decisions }, null, 2);
+    let dl = null;
+    try { dl = window.claude?.use ? await window.claude.use("downloads") : null; } catch (e) {}
+    if (dl) {
+      try { await dl.save({ filename: `hindsight-${today()}.json`, data }); return; } catch (e) { /* declined or failed: fall back to copy */ }
+    }
+    try { await navigator.clipboard.writeText(data); toast("Copied the journal as JSON"); }
+    catch (e) { toast("Export isn't available in this view."); }
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = $("#toast"); el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+
+  // Close a dialog by clicking its backdrop
+  document.querySelectorAll("dialog").forEach((dlg) => dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }));
+
+  init();
+})();
+</script>
