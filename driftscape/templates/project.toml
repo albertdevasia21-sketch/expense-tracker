@@ -1,0 +1,83 @@
+# Driftscape project settings. Anything you leave out uses the built-in default
+# (see dscape/config.py). Durations accept "3h", "2h30m", "45m" or seconds.
+
+[project]
+title = "Misty Pine Forest Rain"
+duration = "3h"
+channel = "Driftscape"
+
+[video]
+width = 1920              # 3840 x 2160 for 4K (see README: disk + render time)
+height = 1080
+fps = 24                  # Veo's default; clips at other rates are converted
+fit = "crop"              # crop = fill frame, pad = letterbox
+codec = "libx264"         # or "h264_videotoolbox" / "hevc_videotoolbox" (Apple hardware, cooler + faster)
+crf = 18                  # libx264 quality (lower = better/bigger)
+maxrate = "16M"           # 1080p; use ~45M for 4K
+bufsize = "32M"
+vt_bitrate = "16M"        # videotoolbox target bitrate (4K: ~40M)
+loop_crossfade = 1.5      # s - blend used to make each clip loop on itself
+transition = 3.0          # s - dissolve between different clips
+hold_min = 20             # s - each looping clip stays on screen between hold_min..hold_max
+hold_max = 45
+cycle_minutes = 10        # unique footage length; it repeats (by stream copy) to fill the duration
+fade_in = 4
+fade_out = 8
+seed = 7                  # change to get a different shot order
+mode = "auto"             # auto | loop | oneshot | pingpong
+
+# Per-clip overrides (clip id = file name, lower-case, non-alphanumerics -> "_"):
+# [clips.forest_wide_01]
+# mode = "oneshot"        # never self-loop this clip
+# weight = 2.0            # show more often
+# exclude = true          # drop it
+# loop_in = 0.4           # seconds - manual loop points
+# loop_out = 7.6
+
+[preview]
+width = 640
+height = 360
+extra_seconds = 20        # preview = one full cycle + this much wrap-around
+
+[audio]
+target_lufs = -18.0       # integrated loudness. YouTube turns down >-14; ambience usually sits quieter
+true_peak = -2.0
+sample_rate = 48000
+bitrate = "384k"          # YouTube's recommended stereo AAC rate
+
+# One block per audio layer. 'license' is REQUIRED before the final render.
+[[audio.layers]]
+file = "rain_bed.wav"                 # relative to the project's audio/ folder
+gain_db = 0.0
+loop = true                           # seamless crossfade loop to fill the duration
+loop_crossfade = 4.0                  # s
+license = "REPLACE: e.g. Epidemic Sound personal subscription, licence ID ..."
+source = ""                           # URL / invoice / track ID - kept for your records
+credit = ""                           # shown in the description if attribution_required
+attribution_required = false
+
+# [[audio.layers]]
+# file = "distant_thunder.wav"
+# gain_db = -9.0
+# loop = true
+# license = "..."
+
+[thumbnail]
+text = "MISTY FOREST RAIN"
+subtext = "3 HOURS · SLEEP · RELAX · STUDY"
+font = ""                 # path to a .ttf/.otf; blank = best available system font
+count = 3
+
+[youtube]
+title = "{title} | {length} of Relaxing Ambience"
+# description = """..."""  # placeholders: {title} {length} {hours} {hours_text} {channel} {credits}
+tags = ["ambience", "rain sounds", "sleep sounds", "relaxing", "forest", "study ambience"]
+category_id = "10"        # 10 Music, 22 People & Blogs, 24 Entertainment
+privacy = "private"       # uploads start private; publish after you check it on YouTube
+made_for_kids = false
+contains_synthetic_media = true   # Veo footage of realistic scenes -> AI disclosure
+default_language = "en"
+
+[system]
+threads = 6               # leaves headroom on an 8-core M3 so the Mac stays responsive
+nice = 10                 # lower CPU priority for renders

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+# projects contain large media - keep them outside the repo (e.g. ~/Driftscape/projects)
+projects/
+*.mp4
+*.mov
+*.m4a
+*.flac
+*.wav
