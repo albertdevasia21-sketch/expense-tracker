@@ -14,9 +14,16 @@ HERE = Path(__file__).resolve().parent.parent
 TEMPLATE = HERE / "templates" / "project.toml"
 
 
+DURATION_OVERRIDE = None
+
+
 def _proj(path):
-    from .config import Project
+    from .config import Project, parse_duration
     p = Project(path)
+    if DURATION_OVERRIDE:
+        p.duration = parse_duration(DURATION_OVERRIDE)
+        p.cfg["project"]["duration"] = DURATION_OVERRIDE
+        print(f"  (duration overridden: {DURATION_OVERRIDE})")
     ff.SETTINGS.update(threads=p.cfg["system"]["threads"], nice=p.cfg["system"]["nice"])
     return p
 
@@ -152,6 +159,8 @@ def cmd_samples(a):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="ds", description="Driftscape ambience video pipeline")
     ap.add_argument("-v", "--verbose", action="store_true", help="print ffmpeg commands")
+    ap.add_argument("-d", "--duration", help="override project.duration for this run, e.g. 3m for a "
+                    "short full-quality sample (put it before the command: ./ds -d 3m render <project>)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     def add(name, fn, help_, project=True):
         s = sub.add_parser(name, help=help_)
@@ -181,6 +190,8 @@ def main(argv=None):
         "--size", default="1920x1080", help="clip size, e.g. 1280x720")
     a = ap.parse_args(argv)
     ff.SETTINGS["verbose"] = a.verbose
+    global DURATION_OVERRIDE
+    DURATION_OVERRIDE = a.duration
     try:
         return a.fn(a) or 0
     except ff.FFmpegError as e:

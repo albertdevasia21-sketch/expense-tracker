@@ -69,6 +69,7 @@ Tip: `P=~/Driftscape/projects/misty-forest` then `./ds all $P`.
 | `./ds all <project> [--final]` | everything except upload |
 | `./ds upload <project> --dry-run` / `--i-confirm` | YouTube upload (see §6) |
 | `./ds -v <command> …` | also print every ffmpeg command |
+| `./ds -d 3m <command> …` | override the duration for this run, e.g. a 3-minute full-quality sample (~200 MB at 1080p) before committing disk to a long render |
 
 Every step is **cached and resumable**. Re-running a command only redoes what changed. If the Mac
 sleeps or you press Ctrl-C mid-render, run the same command again.
