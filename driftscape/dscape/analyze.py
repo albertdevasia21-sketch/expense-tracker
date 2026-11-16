@@ -94,13 +94,28 @@ def analyse_clip(path, fps: float) -> dict:
         return float(np.mean([np.mean(np.abs(gf[t + L] - gf[t])) for t in idx]))
     progressive = lag_diff(long_lag) / (lag_diff(short_lag) + 1e-3)
 
+    # Static-scene check: average 1 s at each end (blurs moving rain/fog/water, keeps trees,
+    # rocks, horizon) and correlate the edge maps. ~1.0 = locked-off camera and unchanged
+    # scenery, so a crossfade loop only has to hide the moving elements. Calibrated on real
+    # Gemini/Veo clips (0.93-0.98) vs a slow zoom (0.62).
+    def _edges(m):
+        gx = m[:, 2:] - m[:, :-2]
+        gy = m[2:, :] - m[:-2, :]
+        return np.hypot(gx[1:-1, :], gy[:, 1:-1]).ravel()
+    k1 = max(2, int(fps))
+    ea, eb = _edges(gf[:k1].mean(axis=0)), _edges(gf[-k1:].mean(axis=0))
+    structure = float(np.corrcoef(ea, eb)[0, 1]) if ea.std() > 1e-3 and eb.std() > 1e-3 else 0.0
+    static_scene = structure >= 0.85
+
     # Grade = how natural a crossfade loop will look. A stationary texture (water, rain,
     # fog) dissolves into itself invisibly even when the two frames differ; a drifting or
     # evolving shot visibly "resets" at every loop.
     if seam_ratio <= 1.5:
         grade = "A"
-    elif progressive <= 1.6 and abs(drift) <= 6:
+    elif (progressive <= 1.6 or static_scene) and abs(drift) <= 6:
         grade = "B"
+    elif static_scene and abs(drift) <= 12:
+        grade = "C"
     elif progressive <= 2.2 and abs(drift) <= 12:
         grade = "C"
     else:
@@ -110,7 +125,7 @@ def analyse_clip(path, fps: float) -> dict:
     mode = "loop" if grade in ("A", "B", "C") else "oneshot"
     if motion < 0.15:
         issues.append("almost no motion: loop will look like a still image")
-    if progressive > 2.2:
+    if progressive > 2.2 and not static_scene:
         issues.append(f"progressive motion x{progressive:.1f} (camera move/zoom or evolving scene): "
                       "a self-loop would visibly reset -> auto mode uses it once per cycle (oneshot); "
                       "set mode = \"loop\" if the reset is acceptable (e.g. soft fog)")
@@ -125,7 +140,7 @@ def analyse_clip(path, fps: float) -> dict:
         "frames": n, "motion": round(motion, 3), "flicker": round(flicker, 3),
         "exposure_drift": round(drift, 2), "spikes": spikes,
         "loop_in": int(i), "loop_out": int(j), "seam_cost": round(cost, 3),
-        "seam_ratio": round(seam_ratio, 2), "progressive": round(progressive, 2),
+        "seam_ratio": round(seam_ratio, 2), "progressive": round(progressive, 2), "structure": round(structure, 3),
         "grade": grade, "mode": mode, "issues": issues,
         "head_hist": hist(rgb[:sec]), "tail_hist": hist(rgb[-sec:]),
         "head_luma": round(float(luma[:sec].mean()), 2), "tail_luma": round(float(luma[-sec:].mean()), 2),
@@ -180,19 +195,21 @@ def run(proj: Project) -> dict:
 def write_report(proj: Project, data: dict) -> None:
     fps = data["fps"]
     lines = [f"# Loop analysis - {proj.cfg['project']['title']}", "",
-             "| clip | len | grade | mode | seam x-motion | progressive | loop in-out | issues |",
-             "|---|---|---|---|---|---|---|---|"]
+             "| clip | len | grade | mode | seam x-motion | progressive | static | loop in-out | issues |",
+             "|---|---|---|---|---|---|---|---|---|"]
     for cid, a in data["clips"].items():
         loop = f"{a.get('loop_in', 0) / fps:.2f}-{a.get('loop_out', 0) / fps:.2f}s"
         iss = "; ".join(a["issues"] + a.get("import_notes", [])) or "-"
         mode = a["mode"] + (" (excluded)" if a["excluded"] else "")
         lines.append(f"| {cid} | {a['frames'] / fps:.1f}s | {a['grade']} | {mode} | {a.get('seam_ratio', '-')} | "
-                     f"{a.get('progressive', '-')} | {loop} | {iss} |")
+                     f"{a.get('progressive', '-')} | {a.get('structure', '-')} | {loop} | {iss} |")
     lines += ["", "**Grades:** " + "; ".join(f"{g} = {t}" for g, t in GRADE_TEXT.items() if g != "E"), "",
               "*seam x-motion*: difference between the chosen loop end and start, as a multiple of the clip's "
               "normal frame-to-frame motion (1.0 = indistinguishable from a normal frame step).", "",
               "*progressive*: how far the picture drifts from itself over the clip (>2.2 = camera move / "
               "evolving scene).", "",
+              "*static*: how well the fixed scenery (trees, rocks, horizon) lines up between the start and "
+              "end of the clip (>=0.85 = locked-off camera; such clips loop well even with drifting fog).", "",
               "Automated checks catch cuts, flashes, flicker, exposure drift, freezes and black frames. They "
               "**cannot** judge AI morphing (warping objects, melting textures, physics errors) - review the "
               "preview for those.", ""]

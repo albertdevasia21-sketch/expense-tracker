@@ -51,7 +51,7 @@ def scan_cycle(path, fps: float, events: list[dict], C: int, preview: bool = Fal
 
     kf = keyframes(path, fps) if preview else set()
     # Low-bitrate previews 'pulse' on keyframes; that is a preview-only encoder effect.
-    pulse = lambda k, jump, ratio: preview and k in kf and jump < 4.0
+    pulse = lambda k, jump, ratio: preview and k in kf and jump < 6.0   # real footage pulses ~4.5 at 360p
     results, flagged_frames, pulses = [], set(), 0
     for e in events:
         k = e["frame"] % n
