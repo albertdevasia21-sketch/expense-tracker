@@ -11,5 +11,8 @@ PY="$(brew --prefix)/bin/python3.12"
 [[ -d .venv ]] || "$PY" -m venv .venv
 .venv/bin/pip install --upgrade pip >/dev/null
 .venv/bin/pip install -r requirements.txt
-if [[ "${1:-}" == "--with-upload" ]]; then .venv/bin/pip install -r requirements-upload.txt; fi
+for arg in "$@"; do
+  if [[ "$arg" == "--with-upload" ]]; then .venv/bin/pip install -r requirements-upload.txt; fi
+  if [[ "$arg" == "--with-browser" ]]; then .venv/bin/pip install -r requirements-browser.txt; fi
+done
 ./ds doctor

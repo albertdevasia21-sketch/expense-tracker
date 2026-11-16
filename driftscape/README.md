@@ -21,6 +21,7 @@ audio/*  ───────────────────────�
 cd driftscape
 ./setup_mac.sh            # installs ffmpeg + Python 3.12 via Homebrew, creates .venv, runs doctor
 ./setup_mac.sh --with-upload   # same, plus the optional YouTube upload libraries
+./setup_mac.sh --with-browser  # same, plus Playwright for the Gemini/Flow browser assistant
 ```
 
 Manual alternative: `brew install ffmpeg python@3.12`, then `python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
@@ -68,6 +69,7 @@ Tip: `P=~/Driftscape/projects/misty-forest` then `./ds all $P`.
 | `./ds qc <project> [--final]` | re-run QC |
 | `./ds all <project> [--final]` | everything except upload |
 | `./ds upload <project> --dry-run` / `--i-confirm` | YouTube upload (see §6) |
+| `./ds clips add\|list\|watch\|chrome\|check\|one\|run\|send\|retry` | prompt queue and Gemini/Flow clip intake (see §7) |
 | `./ds -v <command> …` | also print every ffmpeg command |
 | `./ds -d 3m <command> …` | override the duration for this run, e.g. a 3-minute full-quality sample (~200 MB at 1080p) before committing disk to a long render |
 
@@ -179,14 +181,86 @@ project, which is fine because you publish from YouTube Studio. `contains_synthe
 the default. YouTube requires disclosure for realistic AI-generated scenes; review its current
 policy and set the field to false only if your footage clearly doesn't qualify.
 
-## 7. Tests
+## 7. Getting clips from Gemini or Google Flow (`./ds clips`)
+
+This uses your normal Google subscription through the normal website. There is no paid API.
+Clips land in `~/Driftscape/Veo-Clips` (change with `--dir` or `DS_CLIPS_DIR`, e.g. a folder on
+your SSD). Every download is checked (complete, playable) and compared by content hash, so a
+broken or repeated file is never passed on. Rejected files go to `Veo-Clips/_rejected/`, and
+everything is logged in `Veo-Clips/logs/clips.log`.
+
+**Queue prompts** (both modes):
 
 ```bash
-python3 -m unittest discover -s tests -v      # ~1–2 min: builds a tiny sample project end to end
+./ds clips add --name stream "Static locked-off camera. A small stream over mossy rocks in rain ..."
+./ds clips add --file prompts.txt     # prompts separated by blank lines; optional first line "name: xyz"
+./ds clips list
+```
+
+**Mode A - manual, always works.** You paste and click; the tool does the filing.
+
+```bash
+./ds clips watch
+```
+
+It copies the next prompt to your clipboard and waits. You paste it into Gemini or Flow, generate,
+and click Download. It picks the file up from `~/Downloads`, verifies it, names it, and moves on
+to the next prompt.
+
+**Mode B - browser assistant.** It types the prompt, submits, waits and clicks Download for you,
+in a Chrome window you signed in to yourself. Needs `./setup_mac.sh --with-browser`.
+
+```bash
+./ds clips chrome     # opens Chrome with a separate profile; sign in to Google BY HAND
+./ds clips check      # read-only: reports what it can see; generates nothing
+./ds clips one        # one supervised generation; you approve before it is sent
+./ds clips run        # batch (max 5 per run; --max N). Locked until `one` has succeeded
+```
+
+Use `--site flow` on these commands for Google Flow instead of the Gemini app.
+
+**Hand clips to the pipeline:**
+
+```bash
+./ds clips send <project>          # copies verified clips into the project's inbox/
+./ds clips send <project> --run    # ...and then runs import -> analyse -> preview
+```
+
+**What the assistant will not do, on purpose:**
+- It never signs in for you and never handles your password.
+- It uses no stealth or fingerprint tricks. If Google refuses to sign you in to that Chrome window
+  ("This browser or app may not be secure"), stop and use Mode A.
+- On a sign-in page, CAPTCHA, "verify it's you" or usage-limit message it **stops** and tells you
+  what the page said. It does not retry. After you have dealt with it: `./ds clips retry`.
+- One generation at a time, a 20 s pause between prompts, two failures in a row end the run.
+
+**Status: Mode B has only been tested against a local mock site** (`tests/mock_site.py`), not
+against Google's real pages, which could not be reached from the build environment and which change
+without notice. `./ds clips check` is the first real test. If it cannot find the prompt box or the
+buttons, it prints the button names it can see; put the right ones in `Veo-Clips/browser.toml`:
+
+```toml
+prompt_box = ["div[contenteditable='true']"]   # CSS selectors, tried in order
+submit_name = "^(send message|generate)$"      # regex on the button's name
+download_name = "download"
+[gemini]
+prompt_prefix = "Generate a video: "
+```
+
+Whenever a step cannot be found, the assistant asks you to do that one step by hand and continues.
+
+**Risk to know about:** Google's terms restrict some automated access to its services, and I could
+not confirm how the Gemini and Flow terms treat this kind of assisted use. Automating a consumer
+account can lead to extra verification or account restrictions. Mode A carries none of that risk.
+
+## 8. Tests
+
+```bash
+python3 -m unittest discover -s tests -v      # ~2–3 min: sample project end to end + clip queue + mock browser run
 ./ds samples /tmp/ds-sample && ./ds all /tmp/ds-sample --final   # full-size demo (3 h, 1080p)
 ```
 
-## 8. Why no Blender
+## 9. Why no Blender
 
 FFmpeg does everything this workflow needs: trims, dissolves, loudness and encoding. It streams with
 small memory, and its runs can be cached and repeated. Blender's Video Sequence Editor would add
@@ -195,7 +269,7 @@ for dissolves between clips. Blender would make sense for additions such as para
 on stills, particle overlays (snow, rain on glass), or 3D title cards. Render those to a clip, drop
 it in `inbox/`, and the pipeline treats it like any Veo clip.
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 | Symptom | Fix |
 |---|---|

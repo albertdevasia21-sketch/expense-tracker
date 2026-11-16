@@ -73,6 +73,12 @@ def cmd_doctor(a):
         line("(optional) google-api-python-client (upload)", True)
     except ImportError:
         line("(optional) google-api-python-client (upload)", False, "pip install -r requirements-upload.txt")
+    try:
+        __import__("playwright")
+        line("(optional) playwright (browser assistant for Gemini/Flow)", True)
+    except ImportError:
+        line("(optional) playwright (browser assistant for Gemini/Flow)", False,
+             "pip install -r requirements-browser.txt")
     line("(optional) blender", shutil.which("blender"), "(not required by this pipeline)")
     print("\nAll required dependencies present." if ok else "\nMissing required dependencies (see above).")
     return 0 if ok else 1
@@ -150,6 +156,38 @@ def cmd_upload(a):
     step("upload"); upload.run(_proj(a.project), a.i_confirm, a.dry_run, a.thumbnail)
 
 
+def cmd_clips(a):
+    from . import clips
+    d = clips.clips_dir(a.dir)
+    act = a.action
+    if act == "add":
+        clips.cmd_add(d, a.prompts, a.file, a.name)
+    elif act == "list":
+        clips.cmd_list(d)
+    elif act == "retry":
+        clips.cmd_retry(d)
+    elif act == "watch":
+        step("clips: manual mode"); clips.cmd_watch(d, a.timeout, a.max)
+    elif act == "send":
+        if not a.prompts:
+            raise SystemExit("Usage: ./ds clips send <project> [--only name ...] [--run]")
+        step("clips -> project")
+        clips.cmd_send(d, a.prompts[0], a.only or [])
+        if a.run:
+            a.project, a.final = a.prompts[0], False
+            cmd_all(a)
+    else:
+        from . import browser
+        if act == "chrome":
+            browser.cmd_chrome(d, a.site)
+        elif act == "check":
+            step("clips: browser check"); return 0 if browser.cmd_check(d, a.site) else 1
+        elif act == "one":
+            step("clips: single supervised test"); browser.cmd_one(d, a.site)
+        elif act == "run":
+            step("clips: batch"); browser.cmd_run(d, a.site, a.max or 5)
+
+
 def cmd_samples(a):
     sys.path.insert(0, str(HERE / "tools"))
     import make_samples
@@ -186,6 +224,17 @@ def main(argv=None):
     up.add_argument("--i-confirm", action="store_true", help="required to actually upload")
     up.add_argument("--dry-run", action="store_true")
     up.add_argument("--thumbnail")
+    cl = add("clips", cmd_clips, "clip queue + Gemini/Flow browser assistant (see README)", project=False)
+    cl.add_argument("action", choices=["add", "list", "retry", "watch", "send", "chrome", "check", "one", "run"])
+    cl.add_argument("prompts", nargs="*", help="prompt text(s) for add; project folder for send")
+    cl.add_argument("--file", help="add: text file with prompts separated by blank lines")
+    cl.add_argument("--name", default="", help="add: short name for the clip file")
+    cl.add_argument("--dir", help="clips folder (default ~/Driftscape/Veo-Clips or $DS_CLIPS_DIR)")
+    cl.add_argument("--site", choices=["gemini", "flow"], default="gemini")
+    cl.add_argument("--max", type=int, default=0, help="run/watch: most prompts this run (run default 5)")
+    cl.add_argument("--timeout", type=float, default=20, help="watch: minutes to wait per clip")
+    cl.add_argument("--only", nargs="*", help="send: only these clip names or ids")
+    cl.add_argument("--run", action="store_true", help="send: then run the pipeline preview on the project")
     add("samples", cmd_samples, "generate a synthetic sample project").add_argument(
         "--size", default="1920x1080", help="clip size, e.g. 1280x720")
     a = ap.parse_args(argv)
