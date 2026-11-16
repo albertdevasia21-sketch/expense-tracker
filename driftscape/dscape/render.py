@@ -105,6 +105,13 @@ def build_cycle(proj: Project, tl: dict, preview: bool) -> dict:
         print(f"  [{name}] outro (fade out {fo:.1f}s)")
         render_segment(proj, loops, outro_seg, prof, outro, fx=f",fade=t=out:st=0:d={fo:.3f}")
         mark_fresh(outro, outro_spec)
+    keep = {f.name for f in seg_files} | {intro.name, outro.name}
+    stale = [f for f in wdir.glob("*.mp4") if f.name[:4] in ("seg_", "intr", "outr") and f.name not in keep]
+    for f in stale:
+        f.unlink()
+        f.with_name(f.name + ".spec").unlink(missing_ok=True)
+    if stale:
+        print(f"  [{name}] removed {len(stale)} unused segment file(s)")
     cycle = wdir / "cycle.mp4"
     cyc_spec = [str(f) for f in seg_files]
     if not is_fresh(cycle, cyc_spec):

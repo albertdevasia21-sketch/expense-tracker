@@ -135,8 +135,10 @@ def run(proj: Project, final: bool = False) -> dict:
             rep["loudness"] = L
             tgt = float(proj.cfg["audio"]["target_lufs"])
             okL = L["integrated_lufs"] is not None and abs(L["integrated_lufs"] - tgt) <= 1.0
-            chk.append(("loudness", okL, f"{L['integrated_lufs']} LUFS (target {tgt}), "
-                        f"peak {L['true_peak_dbtp']} dBTP"))
+            chk.append(("loudness", okL, f"{L['integrated_lufs']} LUFS (target {tgt})"))
+            tp_max = float(proj.cfg["audio"]["true_peak"])
+            okP = L["true_peak_dbtp"] is not None and L["true_peak_dbtp"] <= tp_max + 0.5
+            chk.append(("true peak", okP, f"{L['true_peak_dbtp']} dBTP (ceiling {tp_max}, tolerance 0.5 dB)"))
     aj = proj.work / "audio" / f"mix_{name}.json"
     if aj.exists():
         a = json.loads(aj.read_text())

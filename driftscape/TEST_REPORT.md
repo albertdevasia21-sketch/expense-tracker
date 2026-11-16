@@ -96,3 +96,56 @@ dissolves between scenes that look bad together. Watch `out/seams_review.mp4`: i
 python3 -m unittest discover -s tests -v                    # 9 tests, ~1 min
 ./ds samples ~/ds-sample && ./ds all ~/ds-sample --final     # full 3 h run
 ```
+
+---
+
+# Audit — 2026-11-16
+
+A full re-read of the code plus tests of paths the first test run never exercised.
+**Result: no defect that corrupts output; six issues fixed; 19/19 tests pass.**
+
+## Newly tested
+
+| Area | Method | Result |
+|---|---|---|
+| Real footage | 3 Gemini clips (720p, 24 fps, 10 s), 3-minute render | 41/41 seams clean, QC pass |
+| Looped audio continuity | FLAC loop repeated ×3 by FFmpeg vs the same samples tiled in numpy | identical: max sample difference 0, exact length |
+| `pingpong` mode | 1-minute render with one ping-pong clip | 16/16 seams clean, frame-exact |
+| ProRes intermediates (`mezz_codec = "prores"`) | 1-minute render | 18/18 seams clean; working files 2.6× larger (428 MB vs 163 MB) |
+| Clip queue, verification, duplicates, hand-off | 5 unit tests | pass |
+| Browser assistant | 5 tests against a local mock site (generate, download, usage-limit stop, duplicate, truncated file) | pass |
+
+## Issues found and fixed
+
+1. **Loop grading failed on real clips.** Two of three real clips were marked "not loopable"
+   because drifting fog looked like a camera move. *Fix:* a static-scene check that compares the
+   fixed scenery at the start and end of the clip.
+2. **Loops were shorter than they needed to be** (6.0 s from a 10 s clip). When no frames match
+   naturally, trimming gains nothing. *Fix:* such clips now keep their full length (8.5 s loops).
+3. **Peak level overshot the ceiling** (−1.6 dBTP against a −2.0 target) when the limiter was
+   active, and QC did not check it. *Fix:* wider limiter margin (now −2.4 dBTP), a new QC true-peak
+   check, and a warning when a quiet source needs heavy limiting.
+4. **Unused segment files accumulated in `work/`** after every settings change. *Fix:* they are
+   removed automatically, as are intermediates of clips taken out of a project.
+5. **A short `-d` sample could be uploaded as the real video.** *Fix:* `upload` refuses when the
+   last render's length does not match the project duration.
+6. **Usage-limit detection could be confused by old page text.** *Fix:* page text is compared line
+   by line against what was there before the prompt was sent.
+
+## Still unverified (cannot be tested in the build environment)
+
+- Everything macOS-specific: VideoToolbox encoding, `aac_at`, `caffeinate`, clipboard copy, M3 timings.
+- The browser assistant against Google's real Gemini and Flow pages, including whether Google
+  accepts a sign-in in the assistant's Chrome window.
+- The YouTube upload against the real API (only the refusal paths and `--dry-run` were exercised).
+- 4K output.
+- A render longer than 3 minutes from real clips (the 3-hour test used synthetic clips).
+
+## Known limits (by design, not fixed)
+
+- `clips watch` takes the next new video that appears in `~/Downloads`; an unrelated video
+  downloaded at that moment would be picked up (it is still verified and hash-checked).
+- Duplicate detection is by exact file content; two different renders of a similar scene are
+  not flagged.
+- Quality checks cannot see AI artefacts in the picture (the tripod in one real clip was found
+  by eye, not by the tool).

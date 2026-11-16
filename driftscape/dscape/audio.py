@@ -144,7 +144,7 @@ def render_mix(proj: Project, duration: float, out: Path, preview: bool = False)
         if layer.get("loop", True):
             loops[k] = build_layer_loop(proj, layer)
     inputs, graph = _build_graph(proj, duration, loops)
-    spec = {"inputs": inputs, "graph": graph, "lufs": a["target_lufs"], "tp": a["true_peak"],
+    spec = {"v": 2, "inputs": inputs, "graph": graph, "lufs": a["target_lufs"], "tp": a["true_peak"],
             "sigs": [file_sig(Path(x)) for x in inputs if Path(x).exists()], "br": a["bitrate"]}
     if is_fresh(out, spec):
         print(f"  audio cached: {out.name}")
@@ -164,7 +164,11 @@ def render_mix(proj: Project, duration: float, out: Path, preview: bool = False)
     limited = m["tp"] is not None and m["tp"] + gain > TP
     chain = f"volume={gain:.3f}dB"
     if limited:
-        lim = 10 ** ((TP - 0.5) / 20)       # 0.5 dB margin: alimiter works on samples, not true peak
+        lim = 10 ** ((TP - 1.5) / 20)       # margin: alimiter is sample-peak, and AAC encoding overshoots
+        over = m["tp"] + gain - TP
+        if over > 3:
+            print(f"    ! the source audio is quiet with sharp peaks: reaching {I} LUFS needs {over:.1f} dB of "
+                  "peak limiting, which can dull transients. A cleaner/louder recording will sound better.")
         chain += f",alimiter=limit={lim:.5f}:attack=5:release=80:level=false,aresample={a['sample_rate']}"
     print(f"  audio pass 2/2: gain {gain:+.2f} dB{' + peak limiter' if limited else ''} -> {out.name}")
     ff.run(inputs + ["-filter_complex", graph + f",{chain}[o]", "-map", "[o]"] + aac_args(a)

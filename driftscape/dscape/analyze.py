@@ -85,6 +85,12 @@ def analyse_clip(path, fps: float) -> dict:
     # --- loopability ----------------------------------------------------
     i, j, cost = find_loop_points(g, fps)
     seam_ratio = cost / motion
+    if seam_ratio > 2.0:
+        # No naturally matching frames, so the seam is hidden by the crossfade either way.
+        # Trimming would only shorten the loop (more visible repetition): keep the whole clip.
+        i, j = 0, n
+        cost = float(np.mean(np.abs(gf[n - 1] - gf[0])))
+        seam_ratio = cost / motion
     # 'progressive' motion: does the picture keep drifting away from itself (camera move,
     # zoom, evolving scene) or does it hover around a steady state (fog, water, rain)?
     short_lag = max(1, min(int(fps), n // 6))

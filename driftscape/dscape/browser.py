@@ -172,7 +172,11 @@ class Session:
         if "accounts.google.com" in url or "/signin" in url:
             raise Blocked("sign-in page: you are signed out. Sign in by hand in the Chrome window.")
         body = self.text()
-        new = body.replace(baseline, "") if baseline else body
+        if baseline:
+            seen = set(baseline.splitlines())
+            new = "\n".join(line for line in body.splitlines() if line not in seen)
+        else:
+            new = body
         for kind, pat in self.cfg["blockers"].items():
             m = re.search(pat, new, re.I)
             if m:

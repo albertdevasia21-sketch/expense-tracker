@@ -73,6 +73,10 @@ def run(proj: Project, source: Path | None = None) -> dict:
     # drop clips whose source vanished from this import folder
     keep = {slugify(c.stem) for c in clips} | seen
     manifest["clips"] = {k: c for k, c in manifest["clips"].items() if k in keep}
+    for sub in ("mezz", "loops"):            # drop intermediates of clips that are no longer in the project
+        for f in (proj.work / sub).glob("*") if (proj.work / sub).exists() else []:
+            if f.name.split(".")[0] not in manifest["clips"]:
+                f.unlink()
     proj.save_json("work/manifest.json", manifest)
     print(f"  {len(manifest['clips'])} clip(s) in manifest")
     return manifest

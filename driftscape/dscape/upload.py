@@ -31,6 +31,12 @@ def run(proj: Project, confirm: bool, dry_run: bool, thumb: str | None) -> None:
     md = proj.load_json("out/metadata.json")
     fj = proj.load_json("work/final.json")
     video = Path(fj["file"])
+    if abs(float(fj.get("duration", 0)) - proj.duration) > 1.0:
+        raise SystemExit(f"The last render is {fj.get('duration', 0) / 60:.1f} min but this project is set to "
+                         f"{proj.duration / 60:.1f} min - it looks like a short sample (-d). "
+                         "Render the full video first:  ./ds render <project>")
+    if not video.exists():
+        raise SystemExit(f"Rendered video not found: {video}")
     if md.get("validation_errors"):
         raise SystemExit("Fix metadata errors first: " + "; ".join(md["validation_errors"]))
     qc = proj.root / "out" / "reports" / "qc_final.json"
